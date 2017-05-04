@@ -14,7 +14,8 @@ public:
 	URG_processsing();
 	vector<long>limitprocessing(vector<long>data, int maxval, int minval);
 	void drawdata(vector<long>data);
-
+	vector<vector<double>> findthings(vector<long>data,int length);
+	void drawthings(vector<vector<double>>);
 };
 class ofApp : public ofBaseApp{
 	
@@ -40,7 +41,7 @@ class ofApp : public ofBaseApp{
 		vector<long> data,data1;
 		vector<unsigned short> intensity;
 		vector<long> Ddata;
-
+		vector<vector<double>>thingspos ;
 		void drawinformations();
 		ofTrueTypeFont font;
 		URG_processsing urg_processing;

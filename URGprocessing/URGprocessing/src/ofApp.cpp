@@ -2,7 +2,7 @@
 
 
 //using namespace qrk;
-//using namespace std;
+using namespace std;
 
 
 ofApp::ofApp(int argc, char *argv[])
@@ -34,7 +34,7 @@ ofApp::ofApp(int argc, char *argv[])
 void ofApp::setup(){
 	ofSetFrameRate(15);
 	font.loadFont("Meiryo.ttf", 20);
-	
+	thingspos.clear();
 }
 
 //--------------------------------------------------------------
@@ -53,56 +53,19 @@ void ofApp::draw(){
 	double Avedata = 0;
 	ofPoint center(ofGetWidth() / 2, ofGetHeight());
 	urg_processing.drawdata(data);
-
-
+	thingspos=urg_processing.findthings(data,300);
+	//cout << thingspos.size() << endl;
+	urg_processing.drawthings(thingspos);
  	ofSetColor(255, 0, 0);
 	Ddata = data;
 	data1 = data;
 
-	for (int i = 1; i < data.size(); i++)
-	{
-		data1[i] = data1[i - 1] + (data[i] - data[i - 1])/2;
-		Avedata += data1[i];
-	}
-	Avedata /= data.size();
-	double pos = 0,posnum=0;
-	for (int i = 0; i < data1.size(); i++)
-	{
-		if (data1[i] < Avedata)
-		{
-			pos += i;
-			posnum++;
-		}
-	}
-	pos /= posnum;
-	for (int i = 1; i < data.size(); i++)
-	{
-		Ddata[i-1] = abs(data1[i - 1] - data1[i]);
-	}
 	
-	ofSetColor(0, 0, 255);
-	for (int i = 0; i < data.size(); i++)
-	{
-
-		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + Ddata[i] * 2 * cos((data.size()-i)*0.35 / 180 * M_PI + M_PI), Ddata[i] * 2 * sin((data.size() - i)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()));
-	}
-	if ((int)pos < 0)
-	{
-		pos=0;
-	}
-	if ((int)pos > data.size()-1)
-	{
-		pos = data.size()-1;
-	}
-	ofSetColor(255, 0, 0);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2 +data[(int)pos] * 2 * cos((data.size()-pos)*0.35 / 180 * M_PI+M_PI), data[(int)pos] * 2 * sin((data.size()-pos)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()),30);
-
-
 	drawinformations();
 	
 	stringstream pp;
-	pp << "position " << ofToString(pos*0.35);
-	ofDrawBitmapString(pp.str(), 10, 35);
+	//pp << "position " << ofToString(pos*0.35);
+	//ofDrawBitmapString(pp.str(), 10, 35);
 }
 
 //--------------------------------------------------------------
@@ -213,6 +176,78 @@ void URG_processsing::drawdata(vector<long>data)
 	for (int i = 0; i < data.size(); i++)
 	{
 		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + data[i]/2  * cos((data.size() - i)*0.35 / 180 * M_PI + M_PI), data[i]/2 * sin((data.size() - i)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()));
+
+	}
+}
+
+vector<vector<double>> URG_processsing::findthings(vector<long>data,int length)
+{
+	bool find=false;//見つけたフラグ
+	double findpos[4] = { 0,0,0,0 };//物体が存在するであろう場所の平均値0:個数、1:そこまでの距離,2:x,3:y
+	double findposnum=0;//いくつのレーザーを遮ったか
+	double thinglength=0;//物体の横幅
+	vector<vector<double>> thingposes;
+	vector<double> thingpos;
+	thingposes.clear();
+	for (int i = 0; i < 4; i++)
+	{
+		thingpos.push_back(0);
+	}
+	for (int i = 0; i < data.size(); i++)
+	{
+		
+		if (data[i] < length)
+		{
+			find = true;
+			findpos[0] += i;
+			findposnum++;
+		}
+		else
+		{
+			if (find)
+			{
+				findpos[0] =(findpos[0]/ findposnum);//真ん中
+				findpos[1] = data[(int)findpos[0]]/2;
+				thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1];
+				findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
+				findpos[2] = findpos[1] * cos(findpos[0]);
+				findpos[3] = findpos[1] * sin(findpos[0]);
+				thingpos[0] = findpos[2];
+				thingpos[1] = findpos[3];
+				thingpos[2] = thinglength;
+				thingposes.push_back(thingpos);
+
+			}
+			find = false;
+			findpos[0] = 0;
+			findposnum = 0;
+		}
+
+	}
+	if (find)
+	{
+		findpos[0] = (findpos[0] / findposnum);//真ん中
+		findpos[1] = data[(int)findpos[0]] / 2;
+		thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1];
+		findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
+		findpos[2] = findpos[1] * cos(findpos[0]);
+		findpos[3] = findpos[1] * sin(findpos[0]);
+		thingpos[0] = findpos[2];
+		thingpos[1] = findpos[3];
+		thingpos[2] = thinglength;
+		thingposes.push_back(thingpos);
+
+	}
+	return thingposes;
+}
+
+void URG_processsing::drawthings(vector<vector<double>>thingposes)
+{
+	ofSetColor(255, 0, 0);
+	ofFill();
+	for (int i = 0; i < thingposes.size(); i++)
+	{
+		ofDrawCircle(ofPoint(thingposes[i][0]+ofGetWidth()/2, -thingposes[i][1]+ofGetHeight()), thingposes[i][2] );
 
 	}
 }
