@@ -14,7 +14,8 @@ public:
 	URG_processsing();
 	vector<long>limitprocessing(vector<long>data, int maxval, int minval);
 	void drawdata(vector<long>data);
-	vector<vector<double>> findthings(vector<long>data,int length);
+	vector<vector<double>> findthings1(vector<long>data,int length);//”¼Œalength“à‚Ì•¨‘Ì‚ðŒŸ’m
+	vector<vector<double>> findthings2(vector<long>data, int length);//‘å‚«‚³‚ªlength‚­‚ç‚¢‚Ì‚à‚Ì‚ðŒŸ’m
 	void drawthings(vector<vector<double>>);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
 };
