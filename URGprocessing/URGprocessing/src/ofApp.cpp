@@ -35,6 +35,7 @@ void ofApp::setup(){
 	ofSetFrameRate(15);
 	font.loadFont("Meiryo.ttf", 20);
 	thingspos.clear();
+	datas.clear();
 }
 
 //--------------------------------------------------------------
@@ -44,6 +45,16 @@ void ofApp::update() {
 		cout << "Urg_driver::get_distance(): " << urg.what() << endl;
 	}
 	data=urg_processing.limitprocessing(data, 200000, 20);
+	
+	//10個以上はためないようにする
+	if (datas.size() > 3)
+	{
+		datas.erase(datas.begin());
+	}
+	//最新データをベクターの最後に追加
+	datas.push_back(data);
+
+	data = urg_processing.lowpassfilter(data, datas);
 }
 
 //--------------------------------------------------------------
@@ -53,19 +64,13 @@ void ofApp::draw(){
 	double Avedata = 0;
 	ofPoint center(ofGetWidth() / 2, ofGetHeight());
 	urg_processing.drawdata(data);
-	thingspos=urg_processing.findthings(data,300);
+	
 	//cout << thingspos.size() << endl;
+	thingspos = urg_processing.findthings(data, 300);
 	urg_processing.drawthings(thingspos);
  	ofSetColor(255, 0, 0);
-	Ddata = data;
-	data1 = data;
-
-	
 	drawinformations();
-	
-	stringstream pp;
-	//pp << "position " << ofToString(pos*0.35);
-	//ofDrawBitmapString(pp.str(), 10, 35);
+
 }
 
 //--------------------------------------------------------------
@@ -131,10 +136,7 @@ void ofApp::drawinformations() {
 	ofNoFill();
 	ofSetColor(0, 0, 0);
 	ofSetLineWidth(3);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 150);
-	ss.str("");
-	ss << "300mm";
-	font.drawString(ss.str(), ofGetWidth() / 2 - 100, ofGetHeight() - 40);
+	
 	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 250);
 	ss.str("");
 	ss << "500mm" ;
@@ -238,6 +240,14 @@ vector<vector<double>> URG_processsing::findthings(vector<long>data,int length)
 		thingposes.push_back(thingpos);
 
 	}
+
+	
+	ofNoFill();
+	ofSetColor(0, 255, 0);
+	ofSetLineWidth(3);
+	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), length/2);
+	
+
 	return thingposes;
 }
 
@@ -250,4 +260,38 @@ void URG_processsing::drawthings(vector<vector<double>>thingposes)
 		ofDrawCircle(ofPoint(thingposes[i][0]+ofGetWidth()/2, -thingposes[i][1]+ofGetHeight()), thingposes[i][2] );
 
 	}
+}
+
+vector<long> URG_processsing::lowpassfilter(vector<long>data, vector<vector<long>>datas)
+{
+	//平均用のメモリの確保
+	vector<long>ave;
+	for (int i = 0; i < data.size(); i++)
+	{
+		ave.push_back(0);
+	}
+	
+	//平均を求めるため各配列の足し算(最新データは平均に使わない)
+	for (int i = 0; i < datas.size(); i++)
+	{
+		for (int j = 0; j < datas[i].size(); j++)
+		{
+			ave[j] += datas[i][j];
+		}
+	}
+	//平均の計算
+	for (int i = 0; i < ave.size(); i++)
+	{
+		ave[i] /= datas.size() ;
+	}
+	//最新データを加味
+	if (datas.size() > 1)
+	{
+		for (int i = 0; i < ave.size(); i++)
+		{
+			ave[i] += 9*datas[datas.size()-1][i];
+			ave[i] /= 10;//平均と最新の比1:1
+		}
+	}
+	return ave;
 }

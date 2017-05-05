@@ -16,6 +16,7 @@ public:
 	void drawdata(vector<long>data);
 	vector<vector<double>> findthings(vector<long>data,int length);
 	void drawthings(vector<vector<double>>);
+	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
 };
 class ofApp : public ofBaseApp{
 	
@@ -39,6 +40,7 @@ class ofApp : public ofBaseApp{
 		enum { Capture_times = 100 };
 		Urg_driver urg;
 		vector<long> data,data1;
+		vector<vector<long>>datas;//ローパスフィルター用
 		vector<unsigned short> intensity;
 		vector<long> Ddata;
 		vector<vector<double>>thingspos ;
