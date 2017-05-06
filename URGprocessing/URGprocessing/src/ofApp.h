@@ -11,13 +11,16 @@ using namespace std;
 class URG_processsing {
 
 public:
+	Urg_driver urg;
 	URG_processsing();
 	vector<long>limitprocessing(vector<long>data, int maxval, int minval);
 	void drawdata(vector<long>data);
 	vector<vector<double>> findthings1(vector<long>data,int length);//半径length内の物体を検知
 	vector<vector<double>> findthings2(vector<long>data, int length);//大きさがlengthくらいのものを検知
+	vector<vector<double>> findthings3(vector<long>data, vector<long>calibration);//大きさがlengthくらいのものを検知
 	void drawthings(vector<vector<double>>);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
+	
 };
 class ofApp : public ofBaseApp{
 	
@@ -42,11 +45,14 @@ class ofApp : public ofBaseApp{
 		Urg_driver urg;
 		vector<long> data,data1;
 		vector<vector<long>>datas;//ローパスフィルター用
+		vector<long>calibrationdata;//キャリブレーション用
 		vector<unsigned short> intensity;
 		vector<long> Ddata;
 		vector<vector<double>>thingspos ;
 		void drawinformations();
 		ofTrueTypeFont font;
+		vector<long> calibration();
 		URG_processsing urg_processing;
+		
 };
 
