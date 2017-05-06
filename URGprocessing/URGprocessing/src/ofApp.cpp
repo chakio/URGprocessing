@@ -67,11 +67,11 @@ void ofApp::draw(){
 	urg_processing.drawdata(data);
 	
 	
-	thingspos = urg_processing.findthings2(data, 70);
-	/*if (thingspos.size() > 0)
+	thingspos = urg_processing.findthings1(data, 300);
+	if (thingspos.size() > 0)
 	{
 		cout << thingspos[0][2] << endl;
-	}*/
+	}
 	urg_processing.drawthings(thingspos);
  	ofSetColor(255, 0, 0);
 	drawinformations();
