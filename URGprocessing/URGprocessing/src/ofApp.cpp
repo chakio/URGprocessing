@@ -16,6 +16,7 @@ ofApp::ofApp(int argc, char *argv[])
 
 	if (!urg.open(information.device_or_ip_name(),
 		information.baudrate_or_port_number(),
+
 		information.connection_type())) {
 		cout << "Urg_driver::open(): "
 			<< information.device_or_ip_name() << ": " << urg.what() << endl;
