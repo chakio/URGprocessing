@@ -73,7 +73,7 @@ void ofApp::draw(){
 	urg_processing.drawdata(calibrationdata);
 	
 	
-	thingspos = urg_processing.findthings4(data, calibrationdata,70);
+	thingspos = urg_processing.findthings4(data,calibrationdata,70);
 	if (thingspos.size() > 0)
 	{
 		cout << thingspos[0][2] << endl;
