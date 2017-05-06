@@ -17,7 +17,8 @@ public:
 	void drawdata(vector<long>data);
 	vector<vector<double>> findthings1(vector<long>data,int length);//半径length内の物体を検知
 	vector<vector<double>> findthings2(vector<long>data, int length);//大きさがlengthくらいのものを検知
-	vector<vector<double>> findthings3(vector<long>data, vector<long>calibration);//大きさがlengthくらいのものを検知
+	vector<vector<double>> findthings3(vector<long>data, vector<long>calibration);//マップをもとに検出
+	vector<vector<double>> findthings4(vector<long>data, vector<long>calibration, int length);//マップをもとに,大きさがlengthくらいのものを検知
 	void drawthings(vector<vector<double>>);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
 	
@@ -51,7 +52,7 @@ class ofApp : public ofBaseApp{
 		vector<vector<double>>thingspos ;
 		void drawinformations();
 		ofTrueTypeFont font;
-		vector<long> calibration();
+		vector<long> calibration(int sample);
 		URG_processsing urg_processing;
 		
 };

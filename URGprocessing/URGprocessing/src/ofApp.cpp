@@ -38,7 +38,7 @@ void ofApp::setup(){
 	thingspos.clear();
 	datas.clear();
 
-	calibrationdata = calibration();
+	calibrationdata = calibration(50);//50回分の計測結果をもとにmapを作成
 	
 }
 
@@ -73,7 +73,7 @@ void ofApp::draw(){
 	urg_processing.drawdata(calibrationdata);
 	
 	
-	thingspos = urg_processing.findthings3(data, calibrationdata);
+	thingspos = urg_processing.findthings4(data, calibrationdata,70);
 	if (thingspos.size() > 0)
 	{
 		cout << thingspos[0][2] << endl;
@@ -162,7 +162,7 @@ void ofApp::drawinformations() {
 	font.drawString(ss.str(), ofGetWidth() / 2 - 720, ofGetHeight() - 40);
 
 }
-vector<long> ofApp::calibration()
+vector<long> ofApp::calibration(int sample)
 {
 	cout << "calibration start" << endl;
 	vector<long> calibrationdata;
@@ -170,7 +170,7 @@ vector<long> ofApp::calibration()
 	vector<vector<long>>calibrationdatas;
 	long max = 200000;
 	cout << "collectiong data" << endl;
-	for (int i = 0; i <100; i++)
+	for (int i = 0; i <sample; i++)
 	{
 		long time_stamp = 0;
 		if (!urg.get_distance(data, &time_stamp)) {
@@ -255,7 +255,7 @@ vector<vector<double>> URG_processsing::findthings1(vector<long>data,int length)
 			{
 				findpos[0] =((int)findpos[0]/ findposnum);//真ん中
 				findpos[1] = data[findpos[0]];
-				thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]*2;
+				thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*data[findpos[0]+(int)findposnum/2]*2;
 				findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
 				findpos[2] = findpos[1] * cos(findpos[0]);
 				findpos[3] = findpos[1] * sin(findpos[0]);
@@ -275,7 +275,7 @@ vector<vector<double>> URG_processsing::findthings1(vector<long>data,int length)
 	{
 		findpos[0] = (findpos[0] / findposnum);//真ん中
 		findpos[1] = data[(int)findpos[0]] ;
-		thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]*2;
+		thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*data[findpos[0] + (int)findposnum / 2] * 2;
 		findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
 		findpos[2] = findpos[1] * cos(findpos[0]);
 		findpos[3] = findpos[1] * sin(findpos[0]);
@@ -382,6 +382,74 @@ vector<vector<double>> URG_processsing::findthings3(vector<long>data, vector<lon
 	double findpos[4] = { 0,0,0,0 };//物体が存在するであろう場所の平均値0:個数、1:そこまでの距離,2:x,3:y
 	double findposnum = 0;//いくつのレーザーを遮ったか
 	double thinglength = 0;//物体の横幅
+	double maxlength = 0;//物体を遮ってるレーザーのうちで一番長いもの
+	double avelength = 0;
+	vector<vector<double>> thingposes;
+	vector<double> thingpos;
+	thingposes.clear();
+	for (int i = 0; i < 4; i++)
+	{
+		thingpos.push_back(0);
+	}
+	for (int i = 0; i < data.size(); i++)
+	{
+
+		if (data[i] < calibration[i])
+		{
+			find = true;
+			findpos[0] += i;
+			findposnum++;
+			maxlength = max(maxlength, (double)data[i]);
+			avelength += (double)data[i];
+
+		}
+		else
+		{
+			if (find)
+			{
+				avelength /= findposnum;
+				findpos[0] = ((int)findpos[0] / findposnum);//真ん中
+				findpos[1] = data[findpos[0]];
+				thinglength = (findpos[1] + (tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum*0.35 / 180 * M_PI / 2) * 2;
+				findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
+				findpos[2] = findpos[1] * cos(findpos[0]);
+				findpos[3] = findpos[1] * sin(findpos[0]);
+				thingpos[0] = findpos[2];
+				thingpos[1] = findpos[3];
+				thingpos[2] = thinglength;
+				thingposes.push_back(thingpos);
+
+			}
+			find = false;
+			findpos[0] = 0;
+			findposnum = 0;
+			maxlength = 0;
+		}
+
+	}
+	if (find)
+	{
+		avelength /= findposnum;
+		findpos[0] = (findpos[0] / findposnum);//真ん中
+		findpos[1] = data[(int)findpos[0]];
+		thinglength = (findpos[1]+(tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum*0.35 / 180 * M_PI / 2)*2;
+		findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
+		findpos[2] = findpos[1] * cos(findpos[0]);
+		findpos[3] = findpos[1] * sin(findpos[0]);
+		thingpos[0] = findpos[2];
+		thingpos[1] = findpos[3];
+		thingpos[2] = thinglength;
+		thingposes.push_back(thingpos);
+
+	}
+	return thingposes;
+}
+vector<vector<double>> URG_processsing::findthings4(vector<long>data, vector<long>calibration, int length)
+{
+	bool find = false;//見つけたフラグ
+	double findpos[4] = { 0,0,0,0 };//物体が存在するであろう場所の平均値0:個数、1:そこまでの距離,2:x,3:y
+	double findposnum = 0;//いくつのレーザーを遮ったか
+	double thinglength = 0;//物体の横幅
 	vector<vector<double>> thingposes;
 	vector<double> thingpos;
 	thingposes.clear();
@@ -404,14 +472,20 @@ vector<vector<double>> URG_processsing::findthings3(vector<long>data, vector<lon
 			{
 				findpos[0] = ((int)findpos[0] / findposnum);//真ん中
 				findpos[1] = data[findpos[0]];
-				thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1] * 2;
+				thinglength = (findpos[1] + (tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum*0.35 / 180 * M_PI / 2) * 2;
 				findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
 				findpos[2] = findpos[1] * cos(findpos[0]);
 				findpos[3] = findpos[1] * sin(findpos[0]);
 				thingpos[0] = findpos[2];
 				thingpos[1] = findpos[3];
 				thingpos[2] = thinglength;
-				thingposes.push_back(thingpos);
+				if (thinglength > (double)length - 10)
+				{
+					if (thinglength < (double)length + 10)
+					{
+						thingposes.push_back(thingpos);
+					}
+				}
 
 			}
 			find = false;
@@ -424,24 +498,24 @@ vector<vector<double>> URG_processsing::findthings3(vector<long>data, vector<lon
 	{
 		findpos[0] = (findpos[0] / findposnum);//真ん中
 		findpos[1] = data[(int)findpos[0]];
-		thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1] * 2;
+		thinglength = (findpos[1] + (tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum*0.35 / 180 * M_PI / 2) * 2;
 		findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
 		findpos[2] = findpos[1] * cos(findpos[0]);
 		findpos[3] = findpos[1] * sin(findpos[0]);
 		thingpos[0] = findpos[2];
 		thingpos[1] = findpos[3];
 		thingpos[2] = thinglength;
-		thingposes.push_back(thingpos);
-
+		if (thinglength > (double)length - 10)
+		{
+			if (thinglength < (double)length + 10)
+			{
+				thingposes.push_back(thingpos);
+			}
+		}
+	
 	}
-
-
-
-
-
 	return thingposes;
 }
-
 
 void URG_processsing::drawthings(vector<vector<double>>thingposes)
 {
