@@ -5,6 +5,10 @@
 #include "Connection_information.h"
 #include "math_utilities.h"
 #include <iostream>
+#include<fstream>
+#include<iostream>
+#include<string>
+#include<sstream> 
 
 using namespace qrk;
 using namespace std;
@@ -21,6 +25,16 @@ public:
 	vector<vector<double>> findthings4(vector<long>data, vector<long>calibration, int length);//マップをもとに,大きさがlengthくらいのものを検知
 	void drawthings(vector<vector<double>>);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
+	
+};
+class CSV {
+
+public:
+	
+	CSV();
+	vector<long>CSVprocessing(vector<vector<long>>datas);
+	vector<vector<long>>CSVloading(string address);
+	vector<long>CSVtoData(vector<long>data);
 	
 };
 class ofApp : public ofBaseApp{
@@ -54,6 +68,11 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont font;
 		vector<long> calibration(int sample);
 		URG_processsing urg_processing;
+		vector<vector<long>> csvdatas;
+		vector<long> csvdata;
+		bool URGconnecting = false;//URGが接続されている場合true,CSVをもとにする場合false
+		CSV csv;
+
 		
 };
 

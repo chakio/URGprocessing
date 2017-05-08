@@ -1,35 +1,50 @@
 #include "ofApp.h"
-
+#include<fstream>
+#include<iostream>
+#include<string>
+#include<sstream> 
 
 //using namespace qrk;
 using namespace std;
 
-
+std::vector<std::string> split(const std::string &str, char sep)
+{
+	std::vector<std::string> v;
+	std::stringstream ss(str);
+	std::string buffer;
+	while (std::getline(ss, buffer, sep)) {
+		v.push_back(buffer);
+	}
+	return v;
+}
 ofApp::ofApp(int argc, char *argv[])
 {
-	// this kicks off the running of my app
-	// can be OF_WINDOW or OF_FULLSCREEN
-	// pass in width and height too:
-	Connection_information information(argc, argv);
-	
-	// Connects to the sensor
+	if (URGconnecting)//URGが接続されている場合
+	{
+		// this kicks off the running of my app
+		// can be OF_WINDOW or OF_FULLSCREEN
+		// pass in width and height too:
+		Connection_information information(argc, argv);
 
-	if (!urg.open(information.device_or_ip_name(),
-		information.baudrate_or_port_number(),
+		// Connects to the sensor
 
-		information.connection_type())) {
-		cout << "Urg_driver::open(): "
-			<< information.device_or_ip_name() << ": " << urg.what() << endl;
-		
-	}
+		if (!urg.open(information.device_or_ip_name(),
+			information.baudrate_or_port_number(),
 
-	// Gets measurement data
+			information.connection_type())) {
+			cout << "Urg_driver::open(): "
+				<< information.device_or_ip_name() << ": " << urg.what() << endl;
+
+		}
+
+		// Gets measurement data
 #if 1
 	// Case where the measurement range (start/end steps) is defined
-	urg.set_scanning_parameter(urg.deg2step(-90), urg.deg2step(+90), 0);//360digree/1024個 180度分で513個
+		urg.set_scanning_parameter(urg.deg2step(-90), urg.deg2step(+90), 0);//360digree/1024個 180度分で513個
 #endif
-	
-	urg.start_measurement(Urg_driver::Distance, Urg_driver::Infinity_times, 0);
+
+		urg.start_measurement(Urg_driver::Distance, Urg_driver::Infinity_times, 0);
+	}
 	
 }
 void ofApp::setup(){
@@ -37,51 +52,64 @@ void ofApp::setup(){
 	font.loadFont("Meiryo.ttf", 20);
 	thingspos.clear();
 	datas.clear();
-
-	calibrationdata = calibration(50);//50回分の計測結果をもとにmapを作成
+	data.clear();
+	csvdatas.clear();
+	csvdata.clear();
+	if (URGconnecting)//URGが接続されている場合
+	{
+		calibrationdata = calibration(50);//50回分の計測結果をもとにmapを作成
+	}
+	else
+	{
+		csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\roka.csv");
+		
+		csvdata = csv.CSVprocessing(csvdatas);
+		cout << csvdata.size() << endl;
+		data=csv.CSVtoData(csvdata);
+		
+	}
 	
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	long time_stamp = 0;
-	if (!urg.get_distance(data, &time_stamp)) {
-		cout << "Urg_driver::get_distance(): " << urg.what() << endl;
-	}
-	data=urg_processing.limitprocessing(data, 200000, 20);
-	
-	//過去のデータの蓄積
-	//10個以上はためないようにする
-	if (datas.size() > 3)
+	if (URGconnecting)
 	{
-		datas.erase(datas.begin());
+		long time_stamp = 0;
+		if (!urg.get_distance(data, &time_stamp)) {
+			cout << "Urg_driver::get_distance(): " << urg.what() << endl;
+		}
+		data = urg_processing.limitprocessing(data, 200000, 20);
 	}
-	//最新データをベクターの最後に追加
-	datas.push_back(data);
-
-	//data = urg_processing.lowpassfilter(data, datas);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	
-	ofSetColor(0, 0, 255);
-	double Avedata = 0;
-	ofPoint center(ofGetWidth() / 2, ofGetHeight());
-	urg_processing.drawdata(data);
-	ofSetColor(0, 255, 0);
-	urg_processing.drawdata(calibrationdata);
-	
-	
-	thingspos = urg_processing.findthings4(data,calibrationdata,70);
-	if (thingspos.size() > 0)
+	if (URGconnecting)
 	{
-		cout << thingspos[0][2] << endl;
-	}
-	urg_processing.drawthings(thingspos);
- 	ofSetColor(255, 0, 0);
-	drawinformations();
+		ofSetColor(0, 0, 255);
+		double Avedata = 0;
+		ofPoint center(ofGetWidth() / 2, ofGetHeight());
+		urg_processing.drawdata(data);
+		ofSetColor(0, 255, 0);
+		urg_processing.drawdata(calibrationdata);
 
+
+		thingspos = urg_processing.findthings4(data, calibrationdata, 70);
+		if (thingspos.size() > 0)
+		{
+			cout << thingspos[0][2] << endl;
+		}
+		urg_processing.drawthings(thingspos);
+	}
+	else
+	{
+		urg_processing.drawdata(data);
+	}
+	ofSetColor(255, 0, 0);
+	drawinformations();
+	
 }
 
 //--------------------------------------------------------------
@@ -222,7 +250,7 @@ void URG_processsing::drawdata(vector<long>data)
 	ofPoint center(ofGetWidth() / 2, ofGetHeight());
 	for (int i = 0; i < data.size(); i++)
 	{
-		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + data[i]/2  * cos((data.size() - i)*0.35 / 180 * M_PI + M_PI), data[i]/2 * sin((data.size() - i)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()));
+		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + data[i]/5  * cos((data.size() - i)*(double)2/1024 * M_PI + M_PI), data[i]/5 * sin((data.size() - i)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()));
 
 	}
 }
@@ -562,3 +590,86 @@ vector<long> URG_processsing::lowpassfilter(vector<long>data, vector<vector<long
 	return ave;
 }
 
+CSV::CSV()
+{
+
+}
+vector<vector<long>> CSV::CSVloading(string address)
+{
+	//ファイルの読み込み
+	ifstream ifs(address);
+	if (!ifs) {
+		cout << "入力エラー";
+	}
+
+	//csvファイルを1行ずつ読み込む
+	string str;
+	vector<vector<long>>csvdatas;
+	while (ifs &&getline(ifs, str)) {
+		//cout << str<<endl;
+		vector<std::string>numbers = split(str, ',');
+		vector<double>numbersD;
+		vector<long>numbersL;
+
+		for (int i = 0; i < numbers.size(); i++)
+		{
+			if (numbers[i] == "nan")
+			{
+				numbersD.push_back(5.6);
+			}
+			else
+			{
+				numbersD.push_back(stod(numbers[i]));
+			}
+			//cout << stod(numbers[i]) << endl;
+		}
+		for (int i = 0; i < numbers.size(); i++)
+		{
+			if (numbersD[i] < 0.02)
+			{
+				numbersD[i] = 5.6;
+			}
+			if (numbersD[i] > 5.6)
+			{
+				numbersD[i] = 5.6;
+			}
+
+		}
+		for (int i = 0; i < numbersD.size(); i++)
+		{
+			numbersL.push_back(long((double)1000 * numbersD[i]));
+		}
+		csvdatas.push_back(numbersL);
+	}
+	return csvdatas;
+	
+}
+vector<long>CSV::CSVprocessing(vector<vector<long>>datas)
+{
+	long max=5600;
+	vector<long>data;
+	for (int j = 0; j < datas[0].size(); j++)
+	{
+		long minval = max;
+		for (int i = 0; i < datas.size(); i++)
+		{
+			minval = min(minval, datas[i][j]);
+		}
+		data.push_back(minval);
+	}
+	return data;
+}
+
+vector<long>CSV::CSVtoData(vector<long>data)
+{
+	int eracedataNum = 0;
+	data.erase(data.begin(), data.begin() +  44);
+	cout << data.size() << endl;
+	eracedataNum = data.size() - 512;
+	eracedataNum /=2;
+	
+	data.erase(data.begin(), data.begin() + eracedataNum);
+	data.erase(data.end() - eracedataNum+5, data.end());
+
+	return data;
+}

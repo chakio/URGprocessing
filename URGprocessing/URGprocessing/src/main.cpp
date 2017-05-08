@@ -1,6 +1,9 @@
 #include "ofMain.h"
 #include "ofApp.h"
-
+#include<fstream>
+#include<iostream>
+#include<string>
+#include<sstream> 
 //using namespace qrk;
 //using namespace std;
 
