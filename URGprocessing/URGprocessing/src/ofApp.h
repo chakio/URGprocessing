@@ -23,6 +23,7 @@ public:
 	vector<vector<double>> findthings2(vector<long>data, int length);//大きさがlengthくらいのものを検知
 	vector<vector<double>> findthings3(vector<long>data, vector<long>calibration);//マップをもとに検出
 	vector<vector<double>> findthings4(vector<long>data, vector<long>calibration, int length);//マップをもとに,大きさがlengthくらいのものを検知
+	vector<vector<double>> findthings5(vector<long>data, int length);//基準なしで大きさがlengthくらいのものを検知
 	void drawthings(vector<vector<double>>);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
 	

@@ -94,19 +94,24 @@ void ofApp::draw(){
 		urg_processing.drawdata(data);
 		ofSetColor(0, 255, 0);
 		urg_processing.drawdata(calibrationdata);
-
-
 		thingspos = urg_processing.findthings4(data, calibrationdata, 70);
-		if (thingspos.size() > 0)
-		{
-			cout << thingspos[0][2] << endl;
-		}
-		urg_processing.drawthings(thingspos);
 	}
 	else
 	{
+		ofSetColor(0, 255, 0);
 		urg_processing.drawdata(data);
+		thingspos = urg_processing.findthings5(data, 70);
 	}
+
+	ofSetColor(255, 0, 0);
+	if (thingspos.size() > 0)
+	{
+		for (int i = 0; i < thingspos.size(); i++)
+		{
+			cout << thingspos[i][2] << endl;
+		}
+	}
+	urg_processing.drawthings(thingspos);
 	ofSetColor(255, 0, 0);
 	drawinformations();
 	
@@ -176,19 +181,32 @@ void ofApp::drawinformations() {
 	ofSetColor(0, 0, 0);
 	ofSetLineWidth(3);
 	
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 250);
+	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 200);
 	ss.str("");
-	ss << "500mm" ;
+	ss << "1000mm" ;
 	font.drawString(ss.str(), ofGetWidth() / 2-240, ofGetHeight()-40);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 500);
+	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 400);
 	ss.str("");
-	ss << "1000mm";
+	ss << "2000mm";
 	font.drawString(ss.str(), ofGetWidth() / 2 - 470, ofGetHeight() - 40);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 750);
+	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 600);
 	ss.str("");
-	ss << "1500mm";
+	ss << "3000mm";
 	font.drawString(ss.str(), ofGetWidth() / 2 - 720, ofGetHeight() - 40);
+	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 800);
+	ss.str("");
+	ss << "4000mm";
+	font.drawString(ss.str(), ofGetWidth() / 2 - 920, ofGetHeight() - 40);
 
+	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 1000);
+	ss.str("");
+	ss << "5000mm";
+	font.drawString(ss.str(), ofGetWidth() / 2 - 1120, ofGetHeight() - 40);
+
+	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 1120);
+	ss.str("");
+	ss << "5600mm";
+	font.drawString(ss.str(), ofGetWidth() / 2 - 1240, ofGetHeight() - 40);
 }
 vector<long> ofApp::calibration(int sample)
 {
@@ -250,8 +268,13 @@ void URG_processsing::drawdata(vector<long>data)
 	ofPoint center(ofGetWidth() / 2, ofGetHeight());
 	for (int i = 0; i < data.size(); i++)
 	{
+		ofSetColor(0, 255, 0);
 		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + data[i]/5  * cos((data.size() - i)*(double)2/1024 * M_PI + M_PI), data[i]/5 * sin((data.size() - i)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()));
-
+		if (data[i] < 5600)
+		{
+			ofSetColor(0, 255, 255);
+			ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[i] / 5 * cos((data.size() - i)*(double)2 / 1024 * M_PI + M_PI), data[i] / 5 * sin((data.size() - i)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()), 2);
+		}
 	}
 }
 
@@ -323,7 +346,6 @@ vector<vector<double>> URG_processsing::findthings1(vector<long>data,int length)
 
 	return thingposes;
 }
-
 vector<vector<double>> URG_processsing::findthings2(vector<long>data, int length)
 {
 	bool find = false;//見つけたフラグ
@@ -502,8 +524,8 @@ vector<vector<double>> URG_processsing::findthings4(vector<long>data, vector<lon
 				findpos[1] = data[findpos[0]];
 				thinglength = (findpos[1] + (tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum*0.35 / 180 * M_PI / 2) * 2;
 				findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
-				findpos[2] = findpos[1] * cos(findpos[0]);
-				findpos[3] = findpos[1] * sin(findpos[0]);
+				findpos[2] = (findpos[1] + thinglength) * cos(findpos[0]);
+				findpos[3] = (findpos[1] + thinglength) * sin(findpos[0]);
 				thingpos[0] = findpos[2];
 				thingpos[1] = findpos[3];
 				thingpos[2] = thinglength;
@@ -528,8 +550,8 @@ vector<vector<double>> URG_processsing::findthings4(vector<long>data, vector<lon
 		findpos[1] = data[(int)findpos[0]];
 		thinglength = (findpos[1] + (tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum*0.35 / 180 * M_PI / 2) * 2;
 		findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
-		findpos[2] = findpos[1] * cos(findpos[0]);
-		findpos[3] = findpos[1] * sin(findpos[0]);
+		findpos[2] = (findpos[1]+thinglength) * cos(findpos[0]);
+		findpos[3] = (findpos[1] + thinglength) * sin(findpos[0]);
 		thingpos[0] = findpos[2];
 		thingpos[1] = findpos[3];
 		thingpos[2] = thinglength;
@@ -544,6 +566,97 @@ vector<vector<double>> URG_processsing::findthings4(vector<long>data, vector<lon
 	}
 	return thingposes;
 }
+vector<vector<double>> URG_processsing::findthings5(vector<long>data,  int length)
+{
+	bool find = false;//見つけたフラグ
+	bool findout = false;//物体の終点フラグ
+	double findpos[4] = { 0,0,0,0 };//物体が存在するであろう場所の平均値0:個数、1:そこまでの距離,2:x,3:y
+	double findposnum = 0;//いくつのレーザーを遮ったか
+	double thinglength = 0;//物体の横幅
+	vector<vector<double>> thingposes;
+	vector<double> thingpos;
+	thingposes.clear();
+	for (int i = 0; i < 4; i++)
+	{
+		thingpos.push_back(0);
+	}
+	for (int i = 0; i < data.size(); i++)
+	{
+
+		if (data[i] < 5600)//レーザーが短いかどうか
+		{
+			if (find)//データの長さの連続性の確認
+			{
+				if (abs(data[i] - data[i - 1]) < length)
+				{
+					findpos[0] += i;
+					findposnum++;
+					find = true;
+				}
+				else
+				{
+					findout = true;
+				}
+			}
+			else
+			{
+				find = true;
+				findpos[0] += i;
+				findposnum++;
+			}
+		}
+		else
+		{
+			if (find)
+			{
+				findout = true;
+			}
+		}
+		if (findout)//物体の終点を見つけた後の処理
+		{
+			findpos[0] = ((int)findpos[0] / findposnum);//真ん中
+			findpos[1] = data[findpos[0]];
+			thinglength = (findpos[1] + (tan(findposnum* (double)360 / 1024 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum* (double)360 / 1024 / 180 * M_PI / 2) * 2;
+			findpos[0] *= (double)360 / 1024 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
+			findpos[2] = (findpos[1] + thinglength / 2) * cos(findpos[0]);
+			findpos[3] = (findpos[1] + thinglength / 2) * sin(findpos[0]);
+			thingpos[0] = findpos[2];
+			thingpos[1] = findpos[3];
+			thingpos[2] = thinglength;
+			if (thinglength > (double)length - (double)length / 2)
+			{
+				if (thinglength < (double)length + (double)length / 5)
+				{
+					thingposes.push_back(thingpos);
+				}
+			}
+			find = false;
+			findpos[0] = 0;
+			findposnum = 0;
+			findout = false;
+		}
+	}
+	if (find)//最後まで物体の終点が来なかった場合に終点の処理をする
+	{
+		findpos[0] = (findpos[0] / findposnum);//真ん中
+		findpos[1] = data[(int)findpos[0]];
+		thinglength = (findpos[1] + (tan(findposnum* (double)360 / 1024 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum*(double)360 / 1024 / 180 * M_PI / 2) * 2;
+		findpos[0] *= (double)360 / 1024 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
+		findpos[2] = (findpos[1] + thinglength/2) * cos(findpos[0]);
+		findpos[3] = (findpos[1] + thinglength/2) * sin(findpos[0]);
+		thingpos[0] = findpos[2];
+		thingpos[1] = findpos[3];
+		thingpos[2] = thinglength;
+		if (thinglength > (double)length - (double)length / 2)
+		{
+			if (thinglength < (double)length + (double)length / 5)
+			{
+				thingposes.push_back(thingpos);
+			}
+		}
+	}
+	return thingposes;
+}
 
 void URG_processsing::drawthings(vector<vector<double>>thingposes)
 {
@@ -551,7 +664,7 @@ void URG_processsing::drawthings(vector<vector<double>>thingposes)
 	ofFill();
 	for (int i = 0; i < thingposes.size(); i++)
 	{
-		ofDrawCircle(ofPoint(thingposes[i][0]/2+ofGetWidth()/2, -thingposes[i][1]/2+ofGetHeight()), thingposes[i][2]/4 );
+		ofDrawCircle(ofPoint((double)thingposes[i][0]/5+ofGetWidth()/2,(double) -thingposes[i][1]/5+ofGetHeight()), thingposes[i][2]/10 );
 
 	}
 }
@@ -669,7 +782,7 @@ vector<long>CSV::CSVtoData(vector<long>data)
 	eracedataNum /=2;
 	
 	data.erase(data.begin(), data.begin() + eracedataNum);
-	data.erase(data.end() - eracedataNum+5, data.end());
+	data.erase(data.end() - eracedataNum, data.end());
 
 	return data;
 }
