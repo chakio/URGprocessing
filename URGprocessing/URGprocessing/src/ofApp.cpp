@@ -25,16 +25,12 @@ ofApp::ofApp(int argc, char *argv[])
 		// can be OF_WINDOW or OF_FULLSCREEN
 		// pass in width and height too:
 		Connection_information information(argc, argv);
-
 		// Connects to the sensor
-
 		if (!urg.open(information.device_or_ip_name(),
 			information.baudrate_or_port_number(),
-
 			information.connection_type())) {
 			cout << "Urg_driver::open(): "
 				<< information.device_or_ip_name() << ": " << urg.what() << endl;
-
 		}
 
 		// Gets measurement data
@@ -49,7 +45,7 @@ ofApp::ofApp(int argc, char *argv[])
 }
 void ofApp::setup(){
 	ofSetFrameRate(15);
-	font.loadFont("Meiryo.ttf", 20);
+	font.loadFont("Meiryo.ttf", 10);
 	thingspos.clear();
 	datas.clear();
 	data.clear();
@@ -61,14 +57,26 @@ void ofApp::setup(){
 	}
 	else
 	{
-		csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\roka.csv");
-		
-		csvdata = csv.CSVprocessing(csvdatas);
-		cout << csvdata.size() << endl;
-		data=csv.CSVtoData(csvdata);
-		
+		if (otomoCSV)
+		{
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs11.csv",URGRange[2]);//直進
+			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs21.csv", URGRange[2]);//その場回転
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs31.csv", URGRange[2]);//大まわり
+			csvdatas = csv.OtomoToDatas(csvdatas);
+			cout << csvdatas.size() << endl;
+			for (int i = 0; csvdatas.size() > i; i++)
+			{
+				cout << csvdatas[i].size() << endl;
+			}
+		}
+		else
+		{
+			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\roka.csv", URGRange[2]);
+			csvdata = csv.CSVprocessing(csvdatas);
+			cout << csvdata.size() << endl;
+			data = csv.CSVtoData(csvdata);
+		}
 	}
-	
 }
 
 //--------------------------------------------------------------
@@ -91,19 +99,25 @@ void ofApp::draw(){
 		ofSetColor(0, 0, 255);
 		double Avedata = 0;
 		ofPoint center(ofGetWidth() / 2, ofGetHeight());
-		urg_processing.drawdata(data);
+		urg_processing.drawdata(data, (double)URGRange[0] / URGRange[1], URGRange[2]);
 		ofSetColor(0, 255, 0);
-		urg_processing.drawdata(calibrationdata);
+		urg_processing.drawdata(calibrationdata, (double)URGRange[0] / URGRange[1], URGRange[2]);
 		thingspos = urg_processing.findthings4(data, calibrationdata, 70);
+	}
+	else if (otomoCSV)
+	{
+		data = csvdatas[step];
+		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], 8000);
+		
 	}
 	else
 	{
 		ofSetColor(0, 255, 0);
-		urg_processing.drawdata(data);
-		thingspos = urg_processing.findthings5(data, 70);
+		urg_processing.drawdata(data, (double)URGRange[0] / URGRange[1], URGRange[2]);
+		thingspos = urg_processing.findthings5(data, 70, (double)360/1024);
 	}
 
-	ofSetColor(255, 0, 0);
+	/*ofSetColor(255, 0, 0);
 	if (thingspos.size() > 0)
 	{
 		for (int i = 0; i < thingspos.size(); i++)
@@ -111,15 +125,36 @@ void ofApp::draw(){
 			cout << thingspos[i][2] << endl;
 		}
 	}
-	urg_processing.drawthings(thingspos);
+	urg_processing.drawthings(thingspos);*/
 	ofSetColor(255, 0, 0);
-	drawinformations();
+	drawinformations(8000);
 	
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+	if (key == ' ')
+	{
+		if (csvdatas.size()-1 == step)
+		{
+			step = 0;
+		}
+		else
+		{
+			step++;
+		}
+	}
+	else if (key == 'b')
+	{
+		if (step == 0)
+		{
+			step=csvdatas.size() ;
+		}
+		else
+		{
+			step--;
+		}
+	}
 }
 
 //--------------------------------------------------------------
@@ -171,7 +206,7 @@ void ofApp::gotMessage(ofMessage msg){
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
 }
-void ofApp::drawinformations() {
+void ofApp::drawinformations(double range) {
 	stringstream ss;
 	ss << "framerate: " << ofToString(ofGetFrameRate(), 0);
 	ofDrawBitmapString(ss.str(), 10, 20);
@@ -180,33 +215,15 @@ void ofApp::drawinformations() {
 	ofNoFill();
 	ofSetColor(0, 0, 0);
 	ofSetLineWidth(3);
-	
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 200);
-	ss.str("");
-	ss << "1000mm" ;
-	font.drawString(ss.str(), ofGetWidth() / 2-240, ofGetHeight()-40);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 400);
-	ss.str("");
-	ss << "2000mm";
-	font.drawString(ss.str(), ofGetWidth() / 2 - 470, ofGetHeight() - 40);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 600);
-	ss.str("");
-	ss << "3000mm";
-	font.drawString(ss.str(), ofGetWidth() / 2 - 720, ofGetHeight() - 40);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 800);
-	ss.str("");
-	ss << "4000mm";
-	font.drawString(ss.str(), ofGetWidth() / 2 - 920, ofGetHeight() - 40);
 
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 1000);
-	ss.str("");
-	ss << "5000mm";
-	font.drawString(ss.str(), ofGetWidth() / 2 - 1120, ofGetHeight() - 40);
-
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 1120);
-	ss.str("");
-	ss << "5600mm";
-	font.drawString(ss.str(), ofGetWidth() / 2 - 1240, ofGetHeight() - 40);
+	for (int i = 1; i < 11; i++)
+	{
+		ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), (double)1000*i * ofGetHeight() / range);
+		ss.str("");
+		ss << to_string(1000*i);
+		ss << "mm";
+		font.drawString(ss.str(), ofGetWidth() / 2 - (double)1000 *i* ofGetHeight() / range, ofGetHeight() - 40);
+	}
 }
 vector<long> ofApp::calibration(int sample)
 {
@@ -263,17 +280,18 @@ vector<long> URG_processsing::limitprocessing(vector<long>data,int maxval,int mi
 	return data;
 }
 
-void URG_processsing::drawdata(vector<long>data)
+void URG_processsing::drawdata(vector<long>data,double step,double range)
 {
 	ofPoint center(ofGetWidth() / 2, ofGetHeight());
+	double rangeVal = range / ofGetHeight();
 	for (int i = 0; i < data.size(); i++)
 	{
 		ofSetColor(0, 255, 0);
-		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + data[i]/5  * cos((data.size() - i)*(double)2/1024 * M_PI + M_PI), data[i]/5 * sin((data.size() - i)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()));
+		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + data[i]/rangeVal  * cos((data.size() - i)*(double)step / 180 * M_PI  + M_PI), data[i]/ rangeVal * sin((data.size() - i)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()));
 		if (data[i] < 5600)
 		{
 			ofSetColor(0, 255, 255);
-			ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[i] / 5 * cos((data.size() - i)*(double)2 / 1024 * M_PI + M_PI), data[i] / 5 * sin((data.size() - i)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()), 2);
+			ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[i] / rangeVal * cos((data.size() - i)*(double)step / 180 * M_PI  + M_PI), data[i] / rangeVal * sin((data.size() - i)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()), 2);
 		}
 	}
 }
@@ -566,7 +584,7 @@ vector<vector<double>> URG_processsing::findthings4(vector<long>data, vector<lon
 	}
 	return thingposes;
 }
-vector<vector<double>> URG_processsing::findthings5(vector<long>data,  int length)
+vector<vector<double>> URG_processsing::findthings5(vector<long>data,  int length,double step)
 {
 	bool find = false;//見つけたフラグ
 	bool findout = false;//物体の終点フラグ
@@ -616,7 +634,7 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data,  int lengt
 		{
 			findpos[0] = ((int)findpos[0] / findposnum);//真ん中
 			findpos[1] = data[findpos[0]];
-			thinglength = (findpos[1] + (tan(findposnum* (double)360 / 1024 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum* (double)360 / 1024 / 180 * M_PI / 2) * 2;
+			thinglength = (findpos[1] + (tan(findposnum* (double)step / 180 * M_PI / 2)*findpos[1]))*tan(findposnum* (double)step / 180 * M_PI / 2) * 2;
 			findpos[0] *= (double)360 / 1024 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
 			findpos[2] = (findpos[1] + thinglength / 2) * cos(findpos[0]);
 			findpos[3] = (findpos[1] + thinglength / 2) * sin(findpos[0]);
@@ -640,7 +658,7 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data,  int lengt
 	{
 		findpos[0] = (findpos[0] / findposnum);//真ん中
 		findpos[1] = data[(int)findpos[0]];
-		thinglength = (findpos[1] + (tan(findposnum* (double)360 / 1024 / 180 * M_PI / 2)*findpos[1]))*tan(findposnum*(double)360 / 1024 / 180 * M_PI / 2) * 2;
+		thinglength = (findpos[1] + (tan(findposnum* (double)step / 180 * M_PI / 2)*findpos[1]))*tan(findposnum*(double)step / 180 * M_PI / 2) * 2;
 		findpos[0] *= (double)360 / 1024 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
 		findpos[2] = (findpos[1] + thinglength/2) * cos(findpos[0]);
 		findpos[3] = (findpos[1] + thinglength/2) * sin(findpos[0]);
@@ -707,8 +725,9 @@ CSV::CSV()
 {
 
 }
-vector<vector<long>> CSV::CSVloading(string address)
+vector<vector<long>> CSV::CSVloading(string address, double range)
 {
+	range /= 1000;
 	//ファイルの読み込み
 	ifstream ifs(address);
 	if (!ifs) {
@@ -728,7 +747,7 @@ vector<vector<long>> CSV::CSVloading(string address)
 		{
 			if (numbers[i] == "nan")
 			{
-				numbersD.push_back(5.6);
+				numbersD.push_back(range);
 			}
 			else
 			{
@@ -740,11 +759,11 @@ vector<vector<long>> CSV::CSVloading(string address)
 		{
 			if (numbersD[i] < 0.02)
 			{
-				numbersD[i] = 5.6;
+				numbersD[i] = range;
 			}
-			if (numbersD[i] > 5.6)
+			if (numbersD[i] > range)
 			{
-				numbersD[i] = 5.6;
+				numbersD[i] = range;
 			}
 
 		}
@@ -785,4 +804,15 @@ vector<long>CSV::CSVtoData(vector<long>data)
 	data.erase(data.end() - eracedataNum, data.end());
 
 	return data;
+}
+
+vector<vector<long>>CSV::OtomoToDatas(vector<vector<long>>datas)
+{
+	int eracedataNum = 0;
+	for (int i = 0; i < datas.size(); i++)
+	{
+		datas[i].erase(datas[i].begin(), datas[i].begin()+180);//時間情報の削除
+		datas[i].erase(datas[i].end() -180, datas[i].end());
+	}
+	return datas;
 }

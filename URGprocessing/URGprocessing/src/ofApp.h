@@ -18,12 +18,12 @@ public:
 	Urg_driver urg;
 	URG_processsing();
 	vector<long>limitprocessing(vector<long>data, int maxval, int minval);
-	void drawdata(vector<long>data);
+	void drawdata(vector<long>data,double step, double range);
 	vector<vector<double>> findthings1(vector<long>data,int length);//半径length内の物体を検知
 	vector<vector<double>> findthings2(vector<long>data, int length);//大きさがlengthくらいのものを検知
 	vector<vector<double>> findthings3(vector<long>data, vector<long>calibration);//マップをもとに検出
 	vector<vector<double>> findthings4(vector<long>data, vector<long>calibration, int length);//マップをもとに,大きさがlengthくらいのものを検知
-	vector<vector<double>> findthings5(vector<long>data, int length);//基準なしで大きさがlengthくらいのものを検知
+	vector<vector<double>> findthings5(vector<long>data, int length,double step);//基準なしで大きさがlengthくらいのものを検知
 	void drawthings(vector<vector<double>>);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
 	
@@ -34,9 +34,9 @@ public:
 	
 	CSV();
 	vector<long>CSVprocessing(vector<vector<long>>datas);
-	vector<vector<long>>CSVloading(string address);
+	vector<vector<long>>CSVloading(string address,double range);
 	vector<long>CSVtoData(vector<long>data);
-	
+	vector<vector<long>>OtomoToDatas(vector<vector<long>>datas);
 };
 class ofApp : public ofBaseApp{
 	
@@ -65,15 +65,20 @@ class ofApp : public ofBaseApp{
 		vector<unsigned short> intensity;
 		vector<long> Ddata;
 		vector<vector<double>>thingspos ;
-		void drawinformations();
+		void drawinformations(double range);
 		ofTrueTypeFont font;
 		vector<long> calibration(int sample);
 		URG_processsing urg_processing;
 		vector<vector<long>> csvdatas;
 		vector<long> csvdata;
 		bool URGconnecting = false;//URGが接続されている場合true,CSVをもとにする場合false
+		bool otomoCSV = true;
 		CSV csv;
 
-		
+		int step = 0;
+		//いいほう
+		double URGRange[3] = {270,1080,30000};//角度、ステップ数、最大距離
+		//普通のほう
+		//double URGRange[3] = { 240,(double)1024/360*240,30000 };//角度、ステップ数、最大距離
 };
 
