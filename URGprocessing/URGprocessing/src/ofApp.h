@@ -26,7 +26,9 @@ public:
 	vector<vector<double>> findthings4(vector<long>data, vector<long>calibration, int length);//マップをもとに,大きさがlengthくらいのものを検知
 	vector<vector<double>> findthings5(vector<long>data, int length,double step,double range,double Width,double Xwidth,double Ywidth);//基準なしで大きさがlengthくらいのものを検知
 	void drawthings(vector<vector<double>>,double range);
+	vector<vector<double>> drawpoints(vector<long>data, double step, vector<vector<double>>thingposes, double range);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
+	double EllipseApproximation(vector<vector<double>> humanpoints);
 	
 };
 class CSV {
@@ -65,7 +67,7 @@ class ofApp : public ofBaseApp{
 		vector<long>calibrationdata;//キャリブレーション用
 		vector<unsigned short> intensity;
 		vector<long> Ddata;
-		vector<vector<double>>thingspos ;
+		vector<vector<double>>thingspos ;//x,y,width,dataの始まりの場所、終わりの場所
 		void drawinformations(double range);
 		ofTrueTypeFont font;
 		vector<long> calibration(int sample);
@@ -81,5 +83,7 @@ class ofApp : public ofBaseApp{
 		double URGRange[3] = {270,1080,30000};//角度、ステップ数、最大距離
 		//普通のほう
 		//double URGRange[3] = { 240,(double)1024/360*240,30000 };//角度、ステップ数、最大距離
+
+		vector<vector<double>>humanpoints;//ヒトだと思わしき点の集まりx,y
 };
 

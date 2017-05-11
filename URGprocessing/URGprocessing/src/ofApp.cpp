@@ -60,8 +60,8 @@ void ofApp::setup(){
 		if (otomoCSV)
 		{
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs11.csv",URGRange[2]);//直進
-			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs21.csv", URGRange[2]);//その場回転
-			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs31.csv", URGRange[2]);//大まわり
+			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs21.csv", URGRange[2]);//その場回転
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs31.csv", URGRange[2]);//大まわり
 			csvdatas = csv.OtomoToDatas(csvdatas);
 		}
 		else
@@ -109,7 +109,7 @@ void ofApp::draw(){
 	{
 		ofSetColor(0, 255, 0);
 		urg_processing.drawdata(data, (double)URGRange[0] / URGRange[1], URGRange[2], URGRange[2]);
-		thingspos = urg_processing.findthings5(data, 70, (double)360/1024,URGRange[2] , 100, 2500, 5000);
+		thingspos = urg_processing.findthings5(data, 70, (double)360/1024,URGRange[2] , 200, 2500, 5000);
 	}
 
 	//ofSetColor(255, 0, 0);
@@ -120,8 +120,10 @@ void ofApp::draw(){
 			cout << thingspos[i][2] << endl;
 		}
 	}*/
-	
+	cout << thingspos.size() << endl;
 	urg_processing.drawthings(thingspos,4000);
+	humanpoints=urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1],thingspos, 4000);
+	
 	ofSetColor(255, 0, 0);
 	drawinformations(8000);
 	
@@ -565,13 +567,13 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 {
 	bool find = false;//見つけたフラグ
 	bool findout = false;//物体の終点フラグ
-	double findpos[4] = { 0,0,0,0 };//物体が存在するであろう場所の平均値0:個数、1:そこまでの距離,2:x,3:y
+	double findpos[6] = { 0,0,0,0,0,0 };//物体が存在するであろう場所の平均値0:個数、1:そこまでの距離,2:x,3:y,4:始まりのi,5:終わりのi
 	double findposnum = 0;//いくつのレーザーを遮ったか
 	double thinglength = 0;//物体の横幅
 	vector<vector<double>> thingposes;
 	vector<double> thingpos;
 	thingposes.clear();
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		thingpos.push_back(0);
 	}
@@ -585,12 +587,11 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 				{
 					findpos[0] += i;
 					findposnum++;
-					find = true;
 				}
 				else
 				{
-					find = true;
 					findout = true;
+					findpos[5] = i - 1;
 				}
 			}
 			else
@@ -598,6 +599,7 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 				findpos[0] += i;
 				findposnum++;
 				find = true;
+				findpos[4] = i;
 			}
 		}
 		else
@@ -618,6 +620,8 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 			thingpos[0] = findpos[2];
 			thingpos[1] = findpos[3];
 			thingpos[2] = thinglength;
+			thingpos[3] = findpos[4];
+			thingpos[4] = findpos[5];
 			thingposes.push_back(thingpos);
 			
 			find = false;
@@ -703,6 +707,30 @@ void URG_processsing::drawthings(vector<vector<double>>thingposes, double range)
 
 }
 
+vector<vector<double>> URG_processsing::drawpoints(vector<long>data, double step, vector<vector<double>>thingposes, double range)
+{
+	vector<vector<double>>humanpoints;
+	
+	double rangeVal = range / ofGetHeight();
+	ofFill();
+	ofSetColor(255, 0, 0);
+	
+	for (int j = 0; j < (thingposes[0][4] - thingposes[0][3]); j++)
+	{
+		vector<double>humanpoint;
+		int k = j + thingposes[0][3];
+		ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[k] / rangeVal  * cos((data.size() - k)*(double)step / 180 * M_PI + M_PI), data[k] / rangeVal * sin((data.size() - k)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()),5);
+		humanpoint.push_back(ofGetWidth() / 2 + data[k] / rangeVal  * cos((data.size() - k)*(double)step / 180 * M_PI + M_PI));//x
+		humanpoint.push_back(data[k] / rangeVal * sin((data.size() - k)*(double)step / 180 * M_PI + M_PI) + ofGetHeight());
+		humanpoints.push_back(humanpoint);
+	}
+		//ofDrawCircle(ofPoint((double)thingposes[i][0] / rangeVal + ofGetWidth() / 2, (double)-thingposes[i][1] / rangeVal + ofGetHeight()), (double)thingposes[i][2] / rangeVal / 2);
+	
+
+	return humanpoints;
+}
+
+
 vector<long> URG_processsing::lowpassfilter(vector<long>data, vector<vector<long>>datas)
 {
 	//平均用のメモリの確保
@@ -735,6 +763,10 @@ vector<long> URG_processsing::lowpassfilter(vector<long>data, vector<vector<long
 		}
 	}
 	return ave;
+}
+double URG_processsing::EllipseApproximation(vector<vector<double>> humanpoints)
+{
+
 }
 
 CSV::CSV()
