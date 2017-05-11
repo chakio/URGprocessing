@@ -30,6 +30,8 @@ public:
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
 	vector<double> EllipseApproximation(vector<vector<double>> humanpoints);
 	void drawEllipse(vector<double>EllipseElements);
+	vector<double> LinearApproximation(vector<vector<double>> humanpoints);
+	void drawLinear(vector<double>EllipseElements);
 };
 class CSV {
 
@@ -86,5 +88,6 @@ class ofApp : public ofBaseApp{
 
 		vector<vector<double>>humanpoints;//ヒトだと思わしき点の集まりx,y
 		vector<double> EllipseElements;
+		vector<double> LinearElements;
 };
 

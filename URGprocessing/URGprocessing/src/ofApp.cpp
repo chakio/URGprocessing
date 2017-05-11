@@ -61,9 +61,12 @@ void ofApp::setup(){
 		if (otomoCSV)
 		{
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs11.csv",URGRange[2]);//直進
+			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs10.csv", URGRange[2]);//直進
+
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs21.csv", URGRange[2]);//その場回転
-			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs20.csv", URGRange[2]);//その場回転
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs20.csv", URGRange[2]);//その場回転
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs31.csv", URGRange[2]);//大まわり
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs30.csv", URGRange[2]);//大まわり
 			csvdatas = csv.OtomoToDatas(csvdatas);
 		}
 		else
@@ -104,7 +107,7 @@ void ofApp::draw(){
 	else if (otomoCSV)
 	{
 		data = csvdatas[(int)ofGetElapsedTimeMillis()/50%(int)csvdatas.size()];
-		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2],4000);
+		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2],6000);
 		thingspos = urg_processing.findthings5(data, 100, (double)URGRange[0] / URGRange[1], URGRange[2],100,2500,7000);//大きさ、x座標、y座標
 	}
 	else
@@ -123,11 +126,15 @@ void ofApp::draw(){
 		}
 	}*/
 	
-	urg_processing.drawthings(thingspos,4000);
-	humanpoints=urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1],thingspos, 4000);
+	//urg_processing.drawthings(thingspos,4000);
+	humanpoints=urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1],thingspos, 6000);
+
 	EllipseElements=urg_processing.EllipseApproximation(humanpoints);
-	
 	urg_processing.drawEllipse(EllipseElements);
+
+	LinearElements = urg_processing.LinearApproximation(humanpoints);
+	urg_processing.drawLinear(LinearElements);
+
 	ofSetColor(255, 0, 0);
 	drawinformations(8000);
 	
@@ -880,7 +887,6 @@ vector<double> URG_processsing::EllipseApproximation(vector<vector<double>> huma
 				      / (pow(sin(EllipseElemnt[2]), 2) - ansMatrix[1] * pow(cos(EllipseElemnt[2]), 2)));
 
 	return EllipseElemnt;
-	//EllipseElemnt[0]=
 }
 
 void  URG_processsing::drawEllipse(vector<double>EllipseElement)
@@ -894,11 +900,59 @@ void  URG_processsing::drawEllipse(vector<double>EllipseElement)
 			double X = EllipseElement[3] * cos(t)*cos(EllipseElement[2]) - EllipseElement[4] * sin(t)*sin(EllipseElement[2]) + EllipseElement[0];
 			double Y = EllipseElement[3] * cos(t)*sin(EllipseElement[2]) - EllipseElement[4] * sin(t)*cos(EllipseElement[2]) + EllipseElement[1];
 			ofCircle(ofPoint(X, Y), 2);
-			cout << EllipseElement[4] << endl;
 		}
 	}
 }
+vector<double> URG_processsing::LinearApproximation(vector<vector<double>> humanpoints)
+{
+	vector<vector<double>> elements;
+	vector<double>element;
+	for (int i = 0; i < 4; i++)
+	{
+		element.push_back(0);
+	}
 
+	for (int i = 0; i<humanpoints.size(); i++)
+	{
+		double Xi = humanpoints[i][0];
+		double Yi = humanpoints[i][1];
+		element[0] = pow(Xi, 1)*pow(Yi, 0);
+		element[1] = pow(Xi, 0)*pow(Yi, 1);
+		element[2] = pow(Xi, 2)*pow(Yi, 0);
+		element[3] = pow(Xi, 1)*pow(Yi, 1);
+		elements.push_back(element);
+	}
+	double LineElements[4] = { 0,0,0,0 };
+	
+	for (int e = 0; e < elements.size(); e++)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			LineElements[i] += elements[e][i];
+		}
+	}
+
+	vector<double> LineElement;
+	for (int i = 0; i < 2; i++)
+	{
+		LineElement.push_back(0);
+	}
+	LineElement[0] = (elements.size()*LineElements[3] - LineElements[0] * LineElements[1])
+			        	/ (elements.size()*LineElements[2] - LineElements[0] * LineElements[0]);
+	LineElement[1] = (LineElements[2] *LineElements[1] - LineElements[3] * LineElements[0])
+						/ (elements.size()*LineElements[2] - LineElements[0] * LineElements[0]);
+	return LineElement;
+}
+
+void  URG_processsing::drawLinear(vector<double>LinearElement)
+{
+	ofSetColor(0, 0, 255);
+	for (int x = 0; x < ofGetWidth(); x++)
+	{
+		double y = LinearElement[0] * (double)x + LinearElement[1];
+		ofDrawCircle(ofPoint(x, y), 3);
+	}
+}
 CSV::CSV()
 {
 
