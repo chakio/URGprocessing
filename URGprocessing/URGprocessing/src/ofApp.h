@@ -28,8 +28,8 @@ public:
 	void drawthings(vector<vector<double>>,double range);
 	vector<vector<double>> drawpoints(vector<long>data, double step, vector<vector<double>>thingposes, double range);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
-	double EllipseApproximation(vector<vector<double>> humanpoints);
-	
+	vector<double> EllipseApproximation(vector<vector<double>> humanpoints);
+	void drawEllipse(vector<double>EllipseElements);
 };
 class CSV {
 
@@ -85,5 +85,6 @@ class ofApp : public ofBaseApp{
 		//double URGRange[3] = { 240,(double)1024/360*240,30000 };//角度、ステップ数、最大距離
 
 		vector<vector<double>>humanpoints;//ヒトだと思わしき点の集まりx,y
+		vector<double> EllipseElements;
 };
 

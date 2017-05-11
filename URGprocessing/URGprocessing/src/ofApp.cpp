@@ -3,6 +3,7 @@
 #include<iostream>
 #include<string>
 #include<sstream> 
+#include<math.h>
 #include <Eigen/Dense>
 //using namespace qrk;
 using namespace std;
@@ -60,7 +61,8 @@ void ofApp::setup(){
 		if (otomoCSV)
 		{
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs11.csv",URGRange[2]);//íºêi
-			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs21.csv", URGRange[2]);//ÇªÇÃèÍâÒì]
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs21.csv", URGRange[2]);//ÇªÇÃèÍâÒì]
+			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs20.csv", URGRange[2]);//ÇªÇÃèÍâÒì]
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs31.csv", URGRange[2]);//ëÂÇ‹ÇÌÇË
 			csvdatas = csv.OtomoToDatas(csvdatas);
 		}
@@ -120,10 +122,12 @@ void ofApp::draw(){
 			cout << thingspos[i][2] << endl;
 		}
 	}*/
-	cout << thingspos.size() << endl;
+	
 	urg_processing.drawthings(thingspos,4000);
 	humanpoints=urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1],thingspos, 4000);
+	EllipseElements=urg_processing.EllipseApproximation(humanpoints);
 	
+	urg_processing.drawEllipse(EllipseElements);
 	ofSetColor(255, 0, 0);
 	drawinformations(8000);
 	
@@ -764,9 +768,135 @@ vector<long> URG_processsing::lowpassfilter(vector<long>data, vector<vector<long
 	}
 	return ave;
 }
-double URG_processsing::EllipseApproximation(vector<vector<double>> humanpoints)
+vector<double> URG_processsing::EllipseApproximation(vector<vector<double>> humanpoints)
 {
+	vector<vector<vector<double>>> elements;
+	vector<double>ele;
+	for (int i = 0; i < 6; i++)
+	{
+		ele.push_back(0);
+	}
 
+	MatrixXd Matrix(5,5),MatrixInverse(5,5);
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			Matrix(i,j) = 0;
+		}
+	}
+	VectorXd subMatrix(5);
+	for (int i = 0; i < 5; i++)
+	{
+		subMatrix(i) = 0;
+	}
+
+	VectorXd ansMatrix(5);
+	vector<double> EllipseElemnt;
+	for (int i = 0; i < 5; i++)
+	{
+		EllipseElemnt.push_back(0);
+	}
+
+	for(int i=0;i<humanpoints.size();i++)
+	{
+		vector<vector<double>> element;
+		double Xi = humanpoints[i][0];
+		double Yi = humanpoints[i][1];
+		ele[0] = pow(Xi, 2)*pow(Yi, 2);
+		ele[1] = pow(Xi, 1)*pow(Yi, 3);
+		ele[2] = pow(Xi, 2)*pow(Yi, 1);
+		ele[3] = pow(Xi, 1)*pow(Yi, 2);
+		ele[4] = pow(Xi, 1)*pow(Yi, 1);
+		ele[5] = -pow(Xi, 3)*pow(Yi, 1);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 1)*pow(Yi, 3);
+		ele[1] = pow(Xi, 0)*pow(Yi, 4);
+		ele[2] = pow(Xi, 1)*pow(Yi, 2);
+		ele[3] = pow(Xi, 0)*pow(Yi, 3);
+		ele[4] = pow(Xi, 0)*pow(Yi, 2);
+		ele[5] = -pow(Xi, 2)*pow(Yi, 2);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 2)*pow(Yi, 1);
+		ele[1] = pow(Xi, 1)*pow(Yi, 2);
+		ele[2] = pow(Xi, 2)*pow(Yi, 0);
+		ele[3] = pow(Xi, 1)*pow(Yi, 1);
+		ele[4] = pow(Xi, 1)*pow(Yi, 0);
+		ele[5] = -pow(Xi, 3)*pow(Yi, 0);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 1)*pow(Yi, 2);
+		ele[1] = pow(Xi, 0)*pow(Yi, 3);
+		ele[2] = pow(Xi, 1)*pow(Yi, 1);
+		ele[3] = pow(Xi, 0)*pow(Yi, 2);
+		ele[4] = pow(Xi, 0)*pow(Yi, 1);
+		ele[5] = -pow(Xi, 2)*pow(Yi, 1);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 1)*pow(Yi, 1);
+		ele[1] = pow(Xi, 0)*pow(Yi, 2);
+		ele[2] = pow(Xi, 1)*pow(Yi, 0);
+		ele[3] = pow(Xi, 0)*pow(Yi, 1);
+		ele[4] = pow(Xi, 0)*pow(Yi, 0);
+		ele[5] = -pow(Xi, 2)*pow(Yi, 0);
+		element.push_back(ele);
+
+		elements.push_back(element);
+	}
+	for (int e = 0; e < elements.size(); e++)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			for (int j = 0; j < 5; j++)
+			{
+				Matrix(i,j) +=elements[e][i][j];
+			}
+			subMatrix(i) += elements[e][i][5];
+		}
+	}
+	MatrixInverse = Matrix.inverse();
+	ansMatrix = MatrixInverse*subMatrix;
+
+
+	EllipseElemnt[0] = (ansMatrix(0)*ansMatrix(3) - 2 * ansMatrix(1)*ansMatrix(2)) / (4 * ansMatrix(1) - ansMatrix(0)*ansMatrix(0));
+	EllipseElemnt[1] = (ansMatrix(0)*ansMatrix(2) - 2 * ansMatrix(3)) / (4 * ansMatrix(1) - ansMatrix(0)*ansMatrix(0));
+	EllipseElemnt[2] = atan(ansMatrix(0) / (1 - ansMatrix(1))) / 2;
+	EllipseElemnt[3] = sqrt(pow(EllipseElemnt[0]*cos(EllipseElemnt[2])+ EllipseElemnt[1]*sin(EllipseElemnt[2]),2)
+
+		              - ansMatrix[4]*pow(cos(EllipseElemnt[2]),2)
+
+					  -((pow(EllipseElemnt[0] * sin(EllipseElemnt[2]) - EllipseElemnt[1] * cos(EllipseElemnt[2]), 2)- ansMatrix[4]*pow(sin(EllipseElemnt[2]), 2))
+				      *(pow(sin(EllipseElemnt[2]), 2)-ansMatrix[1]* pow(cos(EllipseElemnt[2]), 2))
+					  /(pow(cos(EllipseElemnt[2]), 2) - ansMatrix[1] * pow(sin(EllipseElemnt[2]), 2))));
+
+	EllipseElemnt[4] = sqrt(pow(EllipseElemnt[0] * sin(EllipseElemnt[2]) - EllipseElemnt[1] * cos(EllipseElemnt[2]), 2)
+
+		              - ansMatrix[4] * pow( sin(EllipseElemnt[2]), 2)
+
+		              - (pow(EllipseElemnt[0] * cos(EllipseElemnt[2]) + EllipseElemnt[1] * sin(EllipseElemnt[2]), 2)- ansMatrix[4] * pow(cos(EllipseElemnt[2]), 2))
+					  *(pow(cos(EllipseElemnt[2]), 2) - ansMatrix[1] * pow(sin(EllipseElemnt[2]), 2)) 
+				      / (pow(sin(EllipseElemnt[2]), 2) - ansMatrix[1] * pow(cos(EllipseElemnt[2]), 2)));
+
+	return EllipseElemnt;
+	//EllipseElemnt[0]=
+}
+
+void  URG_processsing::drawEllipse(vector<double>EllipseElement)
+{
+	if (EllipseElement[3] > 0 && EllipseElement[4] > 0)
+	{
+		for (int i = 0; i < 360; i++)
+		{
+			ofSetColor(255, 255, 255);
+			double t =(double) i / 180 * M_PI;
+			double X = EllipseElement[3] * cos(t)*cos(EllipseElement[2]) - EllipseElement[4] * sin(t)*sin(EllipseElement[2]) + EllipseElement[0];
+			double Y = EllipseElement[3] * cos(t)*sin(EllipseElement[2]) - EllipseElement[4] * sin(t)*cos(EllipseElement[2]) + EllipseElement[1];
+			ofCircle(ofPoint(X, Y), 2);
+			cout << EllipseElement[4] << endl;
+		}
+	}
 }
 
 CSV::CSV()
