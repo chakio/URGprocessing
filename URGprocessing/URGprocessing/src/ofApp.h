@@ -9,6 +9,7 @@
 #include<iostream>
 #include<string>
 #include<sstream> 
+#include <Eigen/Dense>
 
 using namespace qrk;
 using namespace std;

@@ -3,10 +3,10 @@
 #include<iostream>
 #include<string>
 #include<sstream> 
-
+#include <Eigen/Dense>
 //using namespace qrk;
 using namespace std;
-
+using namespace Eigen;
 std::vector<std::string> split(const std::string &str, char sep)
 {
 	std::vector<std::string> v;
@@ -102,7 +102,7 @@ void ofApp::draw(){
 	else if (otomoCSV)
 	{
 		data = csvdatas[(int)ofGetElapsedTimeMillis()/50%(int)csvdatas.size()];
-		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2],8000);
+		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2],4000);
 		thingspos = urg_processing.findthings5(data, 100, (double)URGRange[0] / URGRange[1], URGRange[2],100,2500,7000);//大きさ、x座標、y座標
 	}
 	else
@@ -112,15 +112,16 @@ void ofApp::draw(){
 		thingspos = urg_processing.findthings5(data, 70, (double)360/1024,URGRange[2] , 100, 2500, 5000);
 	}
 
-	/*ofSetColor(255, 0, 0);
-	if (thingspos.size() > 0)
+	//ofSetColor(255, 0, 0);
+	/*if (thingspos.size() > 0)
 	{
 		for (int i = 0; i < thingspos.size(); i++)
 		{
 			cout << thingspos[i][2] << endl;
 		}
 	}*/
-	urg_processing.drawthings(thingspos,8000);
+	
+	urg_processing.drawthings(thingspos,4000);
 	ofSetColor(255, 0, 0);
 	drawinformations(8000);
 	
@@ -128,28 +129,7 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	if (key == ' ')
-	{
-		if (csvdatas.size()-1 == step)
-		{
-			step = 0;
-		}
-		else
-		{
-			step++;
-		}
-	}
-	else if (key == 'b')
-	{
-		if (step == 0)
-		{
-			step=csvdatas.size() ;
-		}
-		else
-		{
-			step--;
-		}
-	}
+	
 }
 
 //--------------------------------------------------------------

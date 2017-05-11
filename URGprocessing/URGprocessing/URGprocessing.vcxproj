@@ -95,7 +95,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>C:\Users\kawasaki\Documents\urg_library-1.2.0\include\cpp;C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\kawasaki\Documents\eigen-3.3.3;C:\Users\kawasaki\Documents\urg_library-1.2.0\include\cpp;C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
