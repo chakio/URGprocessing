@@ -34,6 +34,12 @@
     <ClCompile Include="src\Connection_information.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\urg_processing.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CSV.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -81,6 +87,12 @@
       <Filter>addons\ofxGui\src</Filter>
     </ClInclude>
     <ClInclude Include="src\Connection_information.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\urg_processing.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CSV.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

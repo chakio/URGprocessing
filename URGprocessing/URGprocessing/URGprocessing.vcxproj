@@ -187,8 +187,10 @@ C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalI
     <ClCompile Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSliderGroup.cpp" />
     <ClCompile Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxToggle.cpp" />
     <ClCompile Include="src\Connection_information.cpp" />
+    <ClCompile Include="src\CSV.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
+    <ClCompile Include="src\urg_processing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxBaseGui.h" />
@@ -201,7 +203,9 @@ C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalI
     <ClInclude Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSliderGroup.h" />
     <ClInclude Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxToggle.h" />
     <ClInclude Include="src\Connection_information.h" />
+    <ClInclude Include="src\CSV.h" />
     <ClInclude Include="src\ofApp.h" />
+    <ClInclude Include="src\urg_processing.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
