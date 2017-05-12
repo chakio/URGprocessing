@@ -36,6 +36,11 @@ ofApp::ofApp(int argc, char *argv[])
 	
 }
 void ofApp::setup(){
+	gui.setup(); // most of the time you don't need a name
+	gui.add(framerate.setup("framerate"," " ));
+	gui.add(LinearE.setup("LinearE", " "));
+	gui.add(QuadraticE.setup("QuadraticE", " "));
+
 	ofSetFrameRate(15);
 	font.loadFont("Meiryo.ttf", 10);
 	thingspos.clear();
@@ -55,10 +60,10 @@ void ofApp::setup(){
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs10.csv", URGRange[2]);//íºêi
 
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs21.csv", URGRange[2]);//ÇªÇÃèÍâÒì]
-			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs20.csv", URGRange[2]);//ÇªÇÃèÍâÒì]
+			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs20.csv", URGRange[2]);//ÇªÇÃèÍâÒì]
 
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs31.csv", URGRange[2]);//ëÂÇ‹ÇÌÇË
-			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs30.csv", URGRange[2]);//ëÂÇ‹ÇÌÇË
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs30.csv", URGRange[2]);//ëÂÇ‹ÇÌÇË
 			csvdatas = csv.OtomoToDatas(csvdatas);
 		}
 		else
@@ -99,6 +104,7 @@ void ofApp::draw(){
 	else if (otomoCSV)
 	{
 		data = csvdatas[(int)ofGetElapsedTimeMillis()/50%(int)csvdatas.size()];
+		//data = csvdatas[10];
 		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2],6000);
 		thingspos = urg_processing.findthings5(data, 300, (double)URGRange[0] / URGRange[1], URGRange[2],200,2500,6000);//ëÂÇ´Ç≥ÅAxç¿ïWÅAyç¿ïW
 	}
@@ -110,21 +116,30 @@ void ofApp::draw(){
 	}
 
 	
+	QuadraticElements = urg_processing.QuadraticApproximation(humanpoints);
+	urg_processing.drawQuadratic(QuadraticElements);
+	QuadraticE = ofToString(QuadraticElements[3], 3);
 	//urg_processing.drawthings(thingspos,6000);
 	humanpoints=urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1],thingspos, 6000);
+	Squarepoint=urg_processing.drawSquare(data, (double)URGRange[0] / URGRange[1], thingspos, 6000, QuadraticElements);
+
+
+	urg_processing.drawLinear(Squarepoint);
+
 	
 	EllipseElements=urg_processing.EllipseApproximation(humanpoints);
 	urg_processing.drawEllipse(EllipseElements);
 
 	LinearElements = urg_processing.LinearApproximation(humanpoints);
 	urg_processing.drawLinear(LinearElements);
-
-	QuadraticElements = urg_processing.QuadraticApproximation(humanpoints);
-	urg_processing.drawQuadratic(QuadraticElements);
+	LinearE = ofToString(LinearElements[2], 3);
 	
+	
+
 	ofSetColor(255, 0, 0);
 	drawinformations(8000);
 	
+	gui.draw();
 }
 
 //--------------------------------------------------------------
@@ -186,6 +201,7 @@ void ofApp::drawinformations(double range) {
 	ss << "framerate: " << ofToString(ofGetFrameRate(), 0);
 	ofDrawBitmapString(ss.str(), 10, 20);
 
+	framerate= ofToString(ofGetFrameRate(), 0);
 	ofSetCircleResolution(50);
 	ofNoFill();
 	ofSetColor(0, 0, 0);

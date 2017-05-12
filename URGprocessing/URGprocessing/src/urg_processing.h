@@ -25,11 +25,15 @@ public:
 	vector<vector<double>> findthings5(vector<long>data, int length, double step, double range, double Width, double Xwidth, double Ywidth);//Šî€‚È‚µ‚Å‘å‚«‚³‚ªlength‚­‚ç‚¢‚Ì‚à‚Ì‚ğŒŸ’m
 	void drawthings(vector<vector<double>>, double range);
 	vector<vector<double>> drawpoints(vector<long>data, double step, vector<vector<double>>thingposes, double range);
+	vector<ofPoint> drawSquare(vector<long>data, double step, vector<vector<double>>thingposes, double range);
+	vector<ofPoint> drawSquare(vector<long>data, double step, vector<vector<double>>thingposes, double range, vector<double>QuadraticElements);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
 	vector<double> EllipseApproximation(vector<vector<double>> humanpoints);
+	vector<double> EllipseApproximation2(vector<vector<double>> humanpoints);
 	void drawEllipse(vector<double>EllipseElements);
 	vector<double> LinearApproximation(vector<vector<double>> humanpoints);
 	void drawLinear(vector<double>EllipseElements);
+	void drawLinear(vector<ofPoint>EllipseElements);
 	vector<double> QuadraticApproximation(vector<vector<double>> humanpoints);
 	void drawQuadratic(vector<double>QuadraticElements);
 };

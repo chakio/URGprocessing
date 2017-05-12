@@ -490,12 +490,131 @@ vector<vector<double>> URG_processsing::drawpoints(vector<long>data, double step
 		humanpoints.push_back(humanpoint);
 	}
 	//ofDrawCircle(ofPoint((double)thingposes[i][0] / rangeVal + ofGetWidth() / 2, (double)-thingposes[i][1] / rangeVal + ofGetHeight()), (double)thingposes[i][2] / rangeVal / 2);
-
-
+	
+	
+	
 	return humanpoints;
 }
+vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vector<vector<double>>thingposes, double range)
+{
+	vector<vector<double>>humanpoints;
+
+	double rangeVal = range / ofGetHeight();
+	ofFill();
+	ofSetColor(0, 0, 0);
+	vector<ofPoint> point;
+	for (int i = 0; i < 4; i++)
+	{
+		point.push_back(ofPoint(0,0));
+	}
+	ofVec2f vec[4];
+	point[0] = ofPoint(ofGetWidth() / 2 + data[thingposes[0][3]] / rangeVal  * cos((data.size() - thingposes[0][3])*(double)step / 180 * M_PI + M_PI), data[thingposes[0][3]] / rangeVal * sin((data.size() - thingposes[0][3])*(double)step / 180 * M_PI + M_PI) + ofGetHeight());
+	point[1] = ofPoint(ofGetWidth() / 2 + data[thingposes[0][3] + (int)(thingposes[0][4] - thingposes[0][3]) / 2] / rangeVal  * cos((data.size() - thingposes[0][3] - (int)(thingposes[0][4] - thingposes[0][3]) / 2)*(double)step / 180 * M_PI + M_PI), data[thingposes[0][3] + (int)(thingposes[0][4] - thingposes[0][3]) / 2] / rangeVal * sin((data.size() - thingposes[0][3] - (int)(thingposes[0][4] - thingposes[0][3]) / 2)*(double)step / 180 * M_PI + M_PI) + ofGetHeight());
+	point[2] = ofPoint(ofGetWidth() / 2 + data[thingposes[0][4]] / rangeVal  * cos((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI), data[thingposes[0][4]] / rangeVal * sin((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI) + ofGetHeight());
+	vec[0] = point[2] - point[1];
+	point[3] = vec[0] + point[0];
+	for (int i = 0; i < 4; i++)
+	{
+		ofDrawCircle(point[i], 5);
+	}
+	vec[2] = point[2] - point[0];
+	vec[3] = point[3] - point[1];
+
+	vector<ofPoint> anspoint;
+	for (int i = 0; i < 2; i++)
+	{
+		anspoint.push_back(ofPoint(0, 0));
+	}
+
+	if (vec[2].length() > vec[3].length())
+	{
+		//ofDrawLine(point[0], point[2]);
+		anspoint[0] = point[0];
+		anspoint[1] = point[2];
+	}
+	else
+	{
+		//ofDrawLine(point[1], point[3]);
+		anspoint[0] = point[1];
+		anspoint[1] = point[3];
+	}
+	
+
+	return anspoint;
+}
+
+vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vector<vector<double>>thingposes, double range, vector<double>QuadraticElements)
+{
+	vector<vector<double>>humanpoints;
+
+	double rangeVal = range / ofGetHeight();
+	ofFill();
+	ofSetColor(0, 0, 0);
+	vector<ofPoint> point;
+	for (int i = 0; i < 4; i++)
+	{
+		point.push_back(ofPoint(0, 0));
+	}
+	ofVec2f vec[4];
+
+	long minval = 2000000;
+	int minpos;
+	for (int j = 0; j < (thingposes[0][4] - thingposes[0][3]); j++)
+	{
+		if (minval > min(minval, data[thingposes[0][3]+j]))
+		{
+			minval = min(minval, data[thingposes[0][3]+j]);
+			minpos = j;
+		}
+	}
+	cout << minpos << endl;
 
 
+
+	double x = ofGetWidth() / 2 + data[thingposes[0][3]] / rangeVal  * cos((data.size() - thingposes[0][3])*(double)step / 180 * M_PI + M_PI);
+	double y = QuadraticElements[0] * (double)x*(double)x + QuadraticElements[1] * (double)x + QuadraticElements[2];
+	point[0] = ofPoint(x, y);
+
+	x = -1 * QuadraticElements[1] / (2 * QuadraticElements[0]);
+	//x = ofGetWidth() / 2 + data[thingposes[0][3]+minpos] / rangeVal  * cos((data.size() - thingposes[0][3]-minpos )*(double)step / 180 * M_PI + M_PI);
+	y = QuadraticElements[0] * (double)x*(double)x + QuadraticElements[1] * (double)x + QuadraticElements[2];
+	point[1] = ofPoint(x, y);
+	
+	
+	x = ofGetWidth() / 2 + data[thingposes[0][4]] / rangeVal  * cos((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI), data[thingposes[0][4]] / rangeVal * sin((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI) + ofGetHeight();
+	y = QuadraticElements[0] * (double)x*(double)x + QuadraticElements[1] * (double)x + QuadraticElements[2];
+	point[2] = ofPoint(x, y);
+	vec[0] = point[2] - point[1];
+	point[3] = vec[0] + point[0];
+	for (int i = 0; i < 4; i++)
+	{
+		ofDrawCircle(point[i], 5);
+	}
+	vec[2] = point[2] - point[0];
+	vec[3] = point[3] - point[1];
+
+	vector<ofPoint> anspoint;
+	for (int i = 0; i < 2; i++)
+	{
+		anspoint.push_back(ofPoint(0, 0));
+	}
+
+	if (vec[2].length()*0.7 > vec[3].length())
+	{
+		//ofDrawLine(point[0], point[2]);
+		anspoint[0] = point[0];
+		anspoint[1] = point[2];
+	}
+	else
+	{
+		//ofDrawLine(point[1], point[3]);
+		anspoint[0] = point[1];
+		anspoint[1] = point[3];
+	}
+
+
+	return anspoint;
+}
 vector<long> URG_processsing::lowpassfilter(vector<long>data, vector<vector<long>>datas)
 {
 	//ïΩãœópÇÃÉÅÉÇÉäÇÃämï€
@@ -623,7 +742,7 @@ vector<double> URG_processsing::EllipseApproximation(vector<vector<double>> huma
 
 	EllipseElemnt[0] = (ansMatrix(0)*ansMatrix(3) - 2 * ansMatrix(1)*ansMatrix(2)) / (4 * ansMatrix(1) - ansMatrix(0)*ansMatrix(0));
 	EllipseElemnt[1] = (ansMatrix(0)*ansMatrix(2) - 2 * ansMatrix(3)) / (4 * ansMatrix(1) - ansMatrix(0)*ansMatrix(0));
-	EllipseElemnt[2] = atan(ansMatrix(0) / (1 - ansMatrix(1))) / 2;
+	EllipseElemnt[2] = atan(ansMatrix(0) / (1 - ansMatrix(1)) / 2);
 	EllipseElemnt[3] = sqrt(pow(EllipseElemnt[0] * cos(EllipseElemnt[2]) + EllipseElemnt[1] * sin(EllipseElemnt[2]), 2)
 
 		- ansMatrix[4] * pow(cos(EllipseElemnt[2]), 2)
@@ -640,6 +759,131 @@ vector<double> URG_processsing::EllipseApproximation(vector<vector<double>> huma
 		*(pow(cos(EllipseElemnt[2]), 2) - ansMatrix[1] * pow(sin(EllipseElemnt[2]), 2))
 		/ (pow(sin(EllipseElemnt[2]), 2) - ansMatrix[1] * pow(cos(EllipseElemnt[2]), 2)));
 
+	return EllipseElemnt;
+}
+
+vector<double> URG_processsing::EllipseApproximation2(vector<vector<double>> humanpoints)
+{
+	vector<vector<vector<double>>> elements;
+	vector<double>ele;
+	for (int i = 0; i < 6; i++)
+	{
+		ele.push_back(0);
+	}
+
+	MatrixXd Matrix(5, 5), MatrixInverse(5, 5);
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			Matrix(i, j) = 0;
+		}
+	}
+	VectorXd subMatrix(5);
+	for (int i = 0; i < 5; i++)
+	{
+		subMatrix(i) = 0;
+	}
+
+	VectorXd ansMatrix(5);
+	vector<double> EllipseElemnt;
+	for (int i = 0; i < 5; i++)
+	{
+		EllipseElemnt.push_back(0);
+	}
+
+	for (int i = 0; i<humanpoints.size(); i++)
+	{
+		vector<vector<double>> element;
+		double Xi = humanpoints[i][0];
+		double Yi = humanpoints[i][1];
+		ele[0] = pow(Xi, 2)*pow(Yi, 2);
+		ele[1] = pow(Xi, 1)*pow(Yi, 3);
+		ele[2] = pow(Xi, 2)*pow(Yi, 1);
+		ele[3] = pow(Xi, 1)*pow(Yi, 2);
+		ele[4] = pow(Xi, 1)*pow(Yi, 1);
+		ele[5] = -pow(Xi, 3)*pow(Yi, 1);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 1)*pow(Yi, 3);
+		ele[1] = pow(Xi, 0)*pow(Yi, 4);
+		ele[2] = pow(Xi, 1)*pow(Yi, 2);
+		ele[3] = pow(Xi, 0)*pow(Yi, 3);
+		ele[4] = pow(Xi, 0)*pow(Yi, 2);
+		ele[5] = -pow(Xi, 2)*pow(Yi, 2);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 2)*pow(Yi, 1);
+		ele[1] = pow(Xi, 1)*pow(Yi, 2);
+		ele[2] = pow(Xi, 2)*pow(Yi, 0);
+		ele[3] = pow(Xi, 1)*pow(Yi, 1);
+		ele[4] = pow(Xi, 1)*pow(Yi, 0);
+		ele[5] = -pow(Xi, 3)*pow(Yi, 0);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 1)*pow(Yi, 2);
+		ele[1] = pow(Xi, 0)*pow(Yi, 3);
+		ele[2] = pow(Xi, 1)*pow(Yi, 1);
+		ele[3] = pow(Xi, 0)*pow(Yi, 2);
+		ele[4] = pow(Xi, 0)*pow(Yi, 1);
+		ele[5] = -pow(Xi, 2)*pow(Yi, 1);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 1)*pow(Yi, 1);
+		ele[1] = pow(Xi, 0)*pow(Yi, 2);
+		ele[2] = pow(Xi, 1)*pow(Yi, 0);
+		ele[3] = pow(Xi, 0)*pow(Yi, 1);
+		ele[4] = pow(Xi, 0)*pow(Yi, 0);
+		ele[5] = -pow(Xi, 2)*pow(Yi, 0);
+		element.push_back(ele);
+
+		elements.push_back(element);
+	}
+	for (int e = 0; e < elements.size(); e++)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			for (int j = 0; j < 5; j++)
+			{
+				Matrix(i, j) += elements[e][i][j];
+			}
+			subMatrix(i) += elements[e][i][5];
+		}
+	}
+	MatrixInverse = Matrix.inverse();
+	ansMatrix = MatrixInverse*subMatrix;
+
+	EllipseElemnt[2] = atan(ansMatrix(0) / (1 - ansMatrix(1)) / 2);
+
+
+	EllipseElemnt[0] = (ansMatrix(0)*ansMatrix(3) + 2 * ansMatrix(1)*ansMatrix(2)) / (-4 * ansMatrix(1) + ansMatrix(0)*ansMatrix(0));
+	EllipseElemnt[1] = (ansMatrix(0)*ansMatrix(2) - 2 * ansMatrix(3)) / (4 * ansMatrix(1) - ansMatrix(0)*ansMatrix(0));
+	
+	EllipseElemnt[3] = sqrt(pow(EllipseElemnt[0] * cos(EllipseElemnt[2]) + EllipseElemnt[1] * sin(EllipseElemnt[2]), 2)
+
+		- ansMatrix[4] * pow(cos(EllipseElemnt[2]), 2)
+
+		- ((pow(EllipseElemnt[0] * sin(EllipseElemnt[2]) - EllipseElemnt[1] * cos(EllipseElemnt[2]), 2) - ansMatrix[4] * pow(sin(EllipseElemnt[2]), 2))
+			*(pow(sin(EllipseElemnt[2]), 2) - ansMatrix[1] * pow(cos(EllipseElemnt[2]), 2))
+			/ (pow(cos(EllipseElemnt[2]), 2) - ansMatrix[1] * pow(sin(EllipseElemnt[2]), 2))));
+
+	EllipseElemnt[4] = sqrt((1 + 3 * sin(EllipseElemnt[2] * sin(EllipseElemnt[2]) / 4))*(pow(EllipseElemnt[0], 2) + EllipseElemnt[1] * ansMatrix[1] - EllipseElemnt[0] * EllipseElemnt[1] * ansMatrix[0] - ansMatrix[4]));
+	EllipseElemnt[3]= EllipseElemnt[4]*2;
+	/*EllipseElemnt[0] = (ansMatrix[1] + 3 * ansMatrix[1] * cos(EllipseElemnt[2])*cos(EllipseElemnt[2]) + 3 * ansMatrix[2])
+						/ (10 - 18 * sin(EllipseElemnt[2])*sin(EllipseElemnt[2])*cos(EllipseElemnt[2])*cos(EllipseElemnt[2]));
+
+	EllipseElemnt[1] = (ansMatrix[1] + 2 * EllipseElemnt[0] + 6 * EllipseElemnt[0] * sin(EllipseElemnt[2])*sin(EllipseElemnt[2])) / 6;
+		
+	EllipseElemnt[3] = sqrt(EllipseElemnt[0] * EllipseElemnt[0] * (1 + 3 * sin(EllipseElemnt[2])*sin(EllipseElemnt[2]))
+						+ EllipseElemnt[1] * EllipseElemnt[1] * (1 + 3 * cos(EllipseElemnt[2])*cos(EllipseElemnt[2]))
+						- 6 * EllipseElemnt[0] * EllipseElemnt[1] + sin(EllipseElemnt[2])*cos(EllipseElemnt[2]));
+
+	EllipseElemnt[4] = EllipseElemnt[3] / 2;*/
+
+	
+
+	cout << EllipseElemnt[2] << endl;
+	
 	return EllipseElemnt;
 }
 
@@ -676,7 +920,7 @@ vector<double> URG_processsing::LinearApproximation(vector<vector<double>> human
 		element[3] = pow(Xi, 1)*pow(Yi, 1);
 		elements.push_back(element);
 	}
-	double LineElements[4] = { 0,0,0,0 };
+	double LineElements[5] = { 0,0,0,0 };
 
 	for (int e = 0; e < elements.size(); e++)
 	{
@@ -687,7 +931,7 @@ vector<double> URG_processsing::LinearApproximation(vector<vector<double>> human
 	}
 
 	vector<double> LineElement;
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		LineElement.push_back(0);
 	}
@@ -695,17 +939,43 @@ vector<double> URG_processsing::LinearApproximation(vector<vector<double>> human
 		/ (elements.size()*LineElements[2] - LineElements[0] * LineElements[0]);
 	LineElement[1] = (LineElements[2] * LineElements[1] - LineElements[3] * LineElements[0])
 		/ (elements.size()*LineElements[2] - LineElements[0] * LineElements[0]);
+
+	for (int i = 0; i<humanpoints.size(); i++)
+	{
+		double Xi = humanpoints[i][0];
+		double Yi = humanpoints[i][1];
+		LineElement[2] += abs(Yi - LineElement[0] * Xi - LineElement[1]);
+	}
+
 	return LineElement;
 }
 
 void  URG_processsing::drawLinear(vector<double>LinearElement)
 {
 	ofSetColor(0, 0, 255);
-	for (int x = 0; x < ofGetWidth(); x++)
+
+	ofPoint oldpoint = ofPoint(0, LinearElement[1]);
+	for (int x = 1; x < ofGetWidth(); x++)
 	{
 		double y = LinearElement[0] * (double)x + LinearElement[1];
-		ofDrawCircle(ofPoint(x, y), 1);
+		ofDrawLine(ofPoint(x, y), oldpoint);
+		oldpoint = ofPoint(x, y);
 	}
+	
+}
+void  URG_processsing::drawLinear(vector<ofPoint>Element)
+{
+	ofSetColor(255, 0, 0);
+	double A = (Element[1].y - Element[0].y) / (Element[1].x - Element[0].x);
+	double B = Element[1].y - A*Element[1].x;
+	ofPoint oldpoint=ofPoint(0,B);
+	for (int x = 1; x < ofGetWidth(); x++)
+	{
+		double y = A* (double)x + B;
+		ofDrawLine(ofPoint(x, y), oldpoint);
+		oldpoint = ofPoint(x, y);
+	}
+
 }
 
 vector<double> URG_processsing::QuadraticApproximation(vector<vector<double>> humanpoints)
@@ -732,10 +1002,10 @@ vector<double> URG_processsing::QuadraticApproximation(vector<vector<double>> hu
 	}
 
 	VectorXd ansMatrix(3);
-	vector<double> QuadraticElemnt;
-	for (int i = 0; i < 3; i++)
+	vector<double> QuadraticElement;
+	for (int i = 0; i < 4; i++)
 	{
-		QuadraticElemnt.push_back(0);
+		QuadraticElement.push_back(0);
 	}
 
 	for (int i = 0; i<humanpoints.size(); i++)
@@ -777,19 +1047,33 @@ vector<double> URG_processsing::QuadraticApproximation(vector<vector<double>> hu
 	ansMatrix = MatrixInverse*subMatrix;
 
 
-	QuadraticElemnt[0] = ansMatrix(0);
-	QuadraticElemnt[1] = ansMatrix(1);
-	QuadraticElemnt[2] = ansMatrix(2);
+	QuadraticElement[0] = ansMatrix(0);
+	QuadraticElement[1] = ansMatrix(1);
+	QuadraticElement[2] = ansMatrix(2);
 	
-	return QuadraticElemnt;
+
+	for (int i = 0; i<humanpoints.size(); i++)
+	{
+		double Xi = humanpoints[i][0];
+		double Yi = humanpoints[i][1];
+		QuadraticElement[3] += abs(Yi - QuadraticElement[0] * Xi *Xi - QuadraticElement[1] * Xi - QuadraticElement[2]);
+	}
+
+
+	return QuadraticElement;
 }
 
 void URG_processsing::drawQuadratic(vector<double>QuadraticElement)
 {
 	ofSetColor(255, 255, 0);
-	for (int x = 0; x < ofGetWidth(); x++)
+	
+	
+
+	ofPoint oldpoint = ofPoint(0, QuadraticElement[2]);
+	for (int x = 1; x < ofGetWidth(); x++)
 	{
-		double y = QuadraticElement[0] * (double)x*(double)x + QuadraticElement[1] * (double)x+ QuadraticElement[2];
-		ofDrawCircle(ofPoint(x, y), 1);
+		double y = QuadraticElement[0] * (double)x*(double)x + QuadraticElement[1] * (double)x + QuadraticElement[2];
+		ofDrawLine(ofPoint(x, y), oldpoint);
+		oldpoint = ofPoint(x, y);
 	}
 }

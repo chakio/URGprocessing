@@ -12,6 +12,7 @@
 #include<string>
 #include<sstream> 
 #include <Eigen/Dense>
+#include "ofxGui.h"
 
 using namespace qrk;
 using namespace std;
@@ -61,9 +62,15 @@ class ofApp : public ofBaseApp{
 		//double URGRange[3] = { 240,(double)1024/360*240,30000 };//角度、ステップ数、最大距離
 
 		vector<vector<double>>humanpoints;//ヒトだと思わしき点の集まりx,y
+		vector<ofPoint> Squarepoint;
 		vector<double> EllipseElements;
 		vector<double> LinearElements;
 		vector<double> QuadraticElements;
+
+		ofxLabel framerate;
+		ofxLabel LinearE;
+		ofxLabel QuadraticE;
+		ofxPanel gui;
 		
 };
 
