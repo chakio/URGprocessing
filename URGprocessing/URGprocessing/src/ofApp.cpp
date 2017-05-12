@@ -100,33 +100,28 @@ void ofApp::draw(){
 	{
 		data = csvdatas[(int)ofGetElapsedTimeMillis()/50%(int)csvdatas.size()];
 		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2],6000);
-		thingspos = urg_processing.findthings5(data, 80, (double)URGRange[0] / URGRange[1], URGRange[2],80,2500,7000);//大きさ、x座標、y座標
+		thingspos = urg_processing.findthings5(data, 300, (double)URGRange[0] / URGRange[1], URGRange[2],200,2500,6000);//大きさ、x座標、y座標
 	}
 	else
 	{
 		ofSetColor(0, 255, 0);
 		urg_processing.drawdata(data, (double)URGRange[0] / URGRange[1], URGRange[2], URGRange[2]);
-		thingspos = urg_processing.findthings5(data, 70, (double)360/1024,URGRange[2] , 200, 2500, 5000);
+		thingspos = urg_processing.findthings5(data, 70, (double)360/1024,URGRange[2] , 300, 2500, 4500);
 	}
 
-	//ofSetColor(255, 0, 0);
-	/*if (thingspos.size() > 0)
-	{
-		for (int i = 0; i < thingspos.size(); i++)
-		{
-			cout << thingspos[i][2] << endl;
-		}
-	}*/
 	
-	//urg_processing.drawthings(thingspos,4000);
+	//urg_processing.drawthings(thingspos,6000);
 	humanpoints=urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1],thingspos, 6000);
-
+	
 	EllipseElements=urg_processing.EllipseApproximation(humanpoints);
 	urg_processing.drawEllipse(EllipseElements);
 
 	LinearElements = urg_processing.LinearApproximation(humanpoints);
 	urg_processing.drawLinear(LinearElements);
 
+	QuadraticElements = urg_processing.QuadraticApproximation(humanpoints);
+	urg_processing.drawQuadratic(QuadraticElements);
+	
 	ofSetColor(255, 0, 0);
 	drawinformations(8000);
 	

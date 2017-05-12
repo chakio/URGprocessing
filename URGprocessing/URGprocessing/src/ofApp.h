@@ -63,5 +63,7 @@ class ofApp : public ofBaseApp{
 		vector<vector<double>>humanpoints;//ヒトだと思わしき点の集まりx,y
 		vector<double> EllipseElements;
 		vector<double> LinearElements;
+		vector<double> QuadraticElements;
+		
 };
 

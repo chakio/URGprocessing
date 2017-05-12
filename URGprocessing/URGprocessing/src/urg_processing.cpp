@@ -44,7 +44,7 @@ void URG_processsing::drawdata(vector<long>data, double step, double range1, dou
 		if (data[i] < range1)
 		{
 			ofSetColor(0, 255, 255);
-			ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[i] / rangeVal * cos((data.size() - i)*(double)step / 180 * M_PI + M_PI), data[i] / rangeVal * sin((data.size() - i)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()), 2);
+			ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[i] / rangeVal * cos((data.size() - i)*(double)step / 180 * M_PI + M_PI), data[i] / rangeVal * sin((data.size() - i)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()), 1);
 		}
 	}
 }
@@ -367,13 +367,13 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 				else
 				{
 					findout = true;
-					findpos[5] = i - 1;
+					findpos[5] =findpos[4]+ findposnum-1;
 				}
 			}
 			else
 			{
-				findpos[0] += i;
-				findposnum++;
+				findpos[0] = i;
+				findposnum=1;
 				find = true;
 				findpos[4] = i;
 			}
@@ -383,6 +383,7 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 			if (find)
 			{
 				findout = true;
+				findpos[5] = findpos[4] + findposnum - 1;
 			}
 		}
 		if (findout)//物体の終点を見つけた後の処理
@@ -404,6 +405,8 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 			findpos[0] = 0;
 			findposnum = 0;
 			findout = false;
+			thingpos[3] = 0;
+			thingpos[4]=0;
 		}
 	}
 	if (find)//最後まで物体の終点が来なかった場合に終点の処理をする
@@ -417,13 +420,28 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 		thingpos[0] = findpos[2];
 		thingpos[1] = findpos[3];
 		thingpos[2] = thinglength;
+		thingpos[3] = findpos[4];
+		thingpos[4] = data.size()-1;
 		thingposes.push_back(thingpos);
 
+		findpos[0] = 0;
+		findposnum = 0;
+		thingpos[3] = 0;
+		thingpos[4] = 0;
 	}
-
-	for (int i = 0; i < thingposes.size(); i++)
+	
+	bool eraseflag = true;
+	for (int i = 1; i < thingposes.size()+1; i++)
 	{
-		bool eraseflag = true;
+		if (eraseflag )
+		{
+			i -= 1;
+		}
+		else
+		{
+			eraseflag = true;
+		}
+
 		if (abs(thingposes[i][0]) < Xwidth)
 		{
 			if (thingposes[i][1] < Ywidth)
@@ -437,7 +455,6 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 		if (eraseflag)
 		{
 			thingposes.erase(thingposes.begin() + i);
-			i -= 1;
 		}
 	}
 	return thingposes;
@@ -449,35 +466,7 @@ void URG_processsing::drawthings(vector<vector<double>>thingposes, double range)
 	ofNoFill();
 	for (int i = 0; i < thingposes.size(); i++)
 	{
-		if (thingposes[i][0] > -2500)
-		{
-			if (thingposes[i][0] < 2500)
-			{
-				if (thingposes[i][1] < 5000)
-				{
-					if (thingposes[i][2] > 90)
-					{
-						ofSetColor(255, 0, 0);
-					}
-					else
-					{
-						ofSetColor(255, 255, 255);
-					}
-				}
-				else
-				{
-					ofSetColor(0, 0, 255);
-				}
-			}
-			else
-			{
-				ofSetColor(0, 0, 255);
-			}
-		}
-		else
-		{
-			ofSetColor(0, 0, 255);
-		}
+		ofSetColor(255, 0, 0);	
 		ofDrawCircle(ofPoint((double)thingposes[i][0] / rangeVal + ofGetWidth() / 2, (double)-thingposes[i][1] / rangeVal + ofGetHeight()), (double)thingposes[i][2] / rangeVal / 2);
 	}
 
@@ -495,7 +484,7 @@ vector<vector<double>> URG_processsing::drawpoints(vector<long>data, double step
 	{
 		vector<double>humanpoint;
 		int k = j + thingposes[0][3];
-		ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[k] / rangeVal  * cos((data.size() - k)*(double)step / 180 * M_PI + M_PI), data[k] / rangeVal * sin((data.size() - k)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()), 5);
+		ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[k] / rangeVal  * cos((data.size() - k)*(double)step / 180 * M_PI + M_PI), data[k] / rangeVal * sin((data.size() - k)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()), 2);
 		humanpoint.push_back(ofGetWidth() / 2 + data[k] / rangeVal  * cos((data.size() - k)*(double)step / 180 * M_PI + M_PI));//x
 		humanpoint.push_back(data[k] / rangeVal * sin((data.size() - k)*(double)step / 180 * M_PI + M_PI) + ofGetHeight());
 		humanpoints.push_back(humanpoint);
@@ -715,6 +704,92 @@ void  URG_processsing::drawLinear(vector<double>LinearElement)
 	for (int x = 0; x < ofGetWidth(); x++)
 	{
 		double y = LinearElement[0] * (double)x + LinearElement[1];
-		ofDrawCircle(ofPoint(x, y), 3);
+		ofDrawCircle(ofPoint(x, y), 1);
+	}
+}
+
+vector<double> URG_processsing::QuadraticApproximation(vector<vector<double>> humanpoints)
+{
+	vector<vector<vector<double>>> elements;
+	vector<double>ele;
+	for (int i = 0; i < 4; i++)
+	{
+		ele.push_back(0);
+	}
+
+	MatrixXd Matrix(3, 3), MatrixInverse(3, 3);
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			Matrix(i, j) = 0;
+		}
+	}
+	VectorXd subMatrix(3);
+	for (int i = 0; i < 3; i++)
+	{
+		subMatrix(i) = 0;
+	}
+
+	VectorXd ansMatrix(3);
+	vector<double> QuadraticElemnt;
+	for (int i = 0; i < 3; i++)
+	{
+		QuadraticElemnt.push_back(0);
+	}
+
+	for (int i = 0; i<humanpoints.size(); i++)
+	{
+		vector<vector<double>> element;
+		double Xi = humanpoints[i][0];
+		double Yi = humanpoints[i][1];
+		ele[0] = pow(Xi, 4)*pow(Yi, 0);
+		ele[1] = pow(Xi, 3)*pow(Yi, 0);
+		ele[2] = pow(Xi, 2)*pow(Yi, 0);
+		ele[3] = pow(Xi, 2)*pow(Yi, 1);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 3)*pow(Yi, 0);
+		ele[1] = pow(Xi, 2)*pow(Yi, 0);
+		ele[2] = pow(Xi, 1)*pow(Yi, 0);
+		ele[3] = pow(Xi, 1)*pow(Yi, 1);
+		element.push_back(ele);
+
+		ele[0] = pow(Xi, 2)*pow(Yi, 0);
+		ele[1] = pow(Xi, 1)*pow(Yi, 0);
+		ele[2] = pow(Xi, 0)*pow(Yi, 0);
+		ele[3] = pow(Xi, 0)*pow(Yi, 1);
+		element.push_back(ele);
+		elements.push_back(element);
+	}
+	for (int e = 0; e < elements.size(); e++)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				Matrix(i, j) += elements[e][i][j];
+			}
+			subMatrix(i) += elements[e][i][3];
+		}
+	}
+	MatrixInverse = Matrix.inverse();
+	ansMatrix = MatrixInverse*subMatrix;
+
+
+	QuadraticElemnt[0] = ansMatrix(0);
+	QuadraticElemnt[1] = ansMatrix(1);
+	QuadraticElemnt[2] = ansMatrix(2);
+	
+	return QuadraticElemnt;
+}
+
+void URG_processsing::drawQuadratic(vector<double>QuadraticElement)
+{
+	ofSetColor(255, 255, 0);
+	for (int x = 0; x < ofGetWidth(); x++)
+	{
+		double y = QuadraticElement[0] * (double)x*(double)x + QuadraticElement[1] * (double)x+ QuadraticElement[2];
+		ofDrawCircle(ofPoint(x, y), 1);
 	}
 }
