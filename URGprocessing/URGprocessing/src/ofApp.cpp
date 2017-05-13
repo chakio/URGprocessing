@@ -48,6 +48,11 @@ void ofApp::setup(){
 	data.clear();
 	csvdatas.clear();
 	csvdata.clear();
+	humandirects.clear();
+	for (int i = 0; i < 3000; i++)
+	{
+		humandirects.push_back(10);
+	}
 	if (URGconnecting)//URG‚ªÚ‘±‚³‚ê‚Ä‚¢‚éê‡
 	{
 		calibrationdata = calibration(50);//50‰ñ•ª‚ÌŒv‘ªŒ‹‰Ê‚ð‚à‚Æ‚Émap‚ðì¬
@@ -60,10 +65,10 @@ void ofApp::setup(){
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs10.csv", URGRange[2]);//’¼i
 
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs21.csv", URGRange[2]);//‚»‚Ìê‰ñ“]
-			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs20.csv", URGRange[2]);//‚»‚Ìê‰ñ“]
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs20.csv", URGRange[2]);//‚»‚Ìê‰ñ“]
 
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs31.csv", URGRange[2]);//‘å‚Ü‚í‚è
-			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs30.csv", URGRange[2]);//‘å‚Ü‚í‚è
+			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs30.csv", URGRange[2]);//‘å‚Ü‚í‚è
 			csvdatas = csv.OtomoToDatas(csvdatas);
 		}
 		else
@@ -95,7 +100,7 @@ void ofApp::draw(){
 	{
 		ofSetColor(0, 0, 255);
 		double Avedata = 0;
-		ofPoint center(ofGetWidth() / 2, ofGetHeight());
+		ofPoint center(ofGetWidth() / 2, (ofGetHeight()*0.8));
 		urg_processing.drawdata(data, (double)URGRange[0] / URGRange[1], URGRange[2], URGRange[2]);
 		ofSetColor(0, 255, 0);
 		urg_processing.drawdata(calibrationdata, (double)URGRange[0] / URGRange[1], URGRange[2], URGRange[2]);
@@ -123,8 +128,8 @@ void ofApp::draw(){
 	humanpoints=urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1],thingspos, 6000);
 	Squarepoint=urg_processing.drawSquare(data, (double)URGRange[0] / URGRange[1], thingspos, 6000, QuadraticElements);
 
-
-	urg_processing.drawLinear(Squarepoint);
+	double humandirect;
+	humandirect =urg_processing.drawLinear(Squarepoint, humandirects);
 
 	
 	EllipseElements=urg_processing.EllipseApproximation(humanpoints);
@@ -138,6 +143,8 @@ void ofApp::draw(){
 
 	ofSetColor(255, 0, 0);
 	drawinformations(8000);
+	
+	drawGraph(humandirect, 180);
 	
 	gui.draw();
 }
@@ -209,11 +216,11 @@ void ofApp::drawinformations(double range) {
 
 	for (int i = 1; i < 11; i++)
 	{
-		ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), (double)1000*i * ofGetHeight() / range);
+		ofDrawCircle(ofPoint(ofGetWidth() / 2, (ofGetHeight()*0.8), 0), (double)1000*i * (ofGetHeight()*0.8) / range);
 		ss.str("");
 		ss << to_string(1000*i);
 		ss << "mm";
-		font.drawString(ss.str(), ofGetWidth() / 2 - (double)1000 *i* ofGetHeight() / range, ofGetHeight() - 40);
+		font.drawString(ss.str(), ofGetWidth() / 2 - (double)1000 *i* (ofGetHeight()*0.8) / range, (ofGetHeight()*0.8) - 40);
 	}
 }
 vector<long> ofApp::calibration(int sample)
@@ -250,5 +257,22 @@ vector<long> ofApp::calibration(int sample)
 
 	return calibrationdata;
 }
+void ofApp::drawGraph(double humandirect, double valueWidth)
+{
 
+	humandirects.push_back(humandirect);
+	if (humandirects.size() > ofGetWidth())
+	{
+		humandirects.erase(humandirects.begin());
+	}
+	ofFill();
+	ofSetColor(0, 0, 0);
+	ofDrawRectangle(ofPoint(0, ofGetHeight()*0.8), ofGetWidth(), ofGetHeight()*0.2);
+	ofSetColor(0, 255, 0);
+	ofSetLineWidth(2);
+	for (int i = 0; i < ofGetWidth(); i++)
+	{
+		ofDrawLine(ofPoint(i, -humandirects[humandirects.size()-1-i]* ofGetHeight()*0.1/ valueWidth + ofGetHeight()*0.9), ofPoint(i+1, -humandirects[humandirects.size()-i-2] * ofGetHeight()*0.1 / valueWidth + ofGetHeight()*0.9));
+	}
+}
 

@@ -35,16 +35,16 @@ vector<long> URG_processsing::limitprocessing(vector<long>data, int maxval, int 
 
 void URG_processsing::drawdata(vector<long>data, double step, double range1, double range2)
 {
-	ofPoint center(ofGetWidth() / 2, ofGetHeight());
-	double rangeVal = range2 / ofGetHeight();
+	ofPoint center(ofGetWidth() / 2, (ofGetHeight()*0.8));
+	double rangeVal = range2 / (ofGetHeight()*0.8);
 	for (int i = 0; i < data.size(); i++)
 	{
 		ofSetColor(0, 255, 0);
-		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + data[i] / rangeVal  * cos((data.size() - i)*(double)step / 180 * M_PI + M_PI), data[i] / rangeVal * sin((data.size() - i)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()));
+		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + data[i] / rangeVal  * cos((data.size() - i)*(double)step / 180 * M_PI + M_PI), data[i] / rangeVal * sin((data.size() - i)*(double)step / 180 * M_PI + M_PI) + (ofGetHeight()*0.8)));
 		if (data[i] < range1)
 		{
 			ofSetColor(0, 255, 255);
-			ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[i] / rangeVal * cos((data.size() - i)*(double)step / 180 * M_PI + M_PI), data[i] / rangeVal * sin((data.size() - i)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()), 1);
+			ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[i] / rangeVal * cos((data.size() - i)*(double)step / 180 * M_PI + M_PI), data[i] / rangeVal * sin((data.size() - i)*(double)step / 180 * M_PI + M_PI) + (ofGetHeight()*0.8)), 1);
 		}
 	}
 }
@@ -112,7 +112,7 @@ vector<vector<double>> URG_processsing::findthings1(vector<long>data, int length
 	ofNoFill();
 	ofSetColor(0, 255, 0);
 	ofSetLineWidth(3);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), length / 2);
+	ofDrawCircle(ofPoint(ofGetWidth() / 2, (ofGetHeight()*0.8), 0), length / 2);
 
 
 	return thingposes;
@@ -192,7 +192,7 @@ vector<vector<double>> URG_processsing::findthings2(vector<long>data, int length
 	ofNoFill();
 	ofSetColor(0, 255, 0);
 	ofSetLineWidth(3);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), length / 2);
+	ofDrawCircle(ofPoint(ofGetWidth() / 2, (ofGetHeight()*0.8), 0), length / 2);
 
 
 	return thingposes;
@@ -462,12 +462,12 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 
 void URG_processsing::drawthings(vector<vector<double>>thingposes, double range)
 {
-	double rangeVal = range / ofGetHeight();
+	double rangeVal = range / (ofGetHeight()*0.8);
 	ofNoFill();
 	for (int i = 0; i < thingposes.size(); i++)
 	{
 		ofSetColor(255, 0, 0);	
-		ofDrawCircle(ofPoint((double)thingposes[i][0] / rangeVal + ofGetWidth() / 2, (double)-thingposes[i][1] / rangeVal + ofGetHeight()), (double)thingposes[i][2] / rangeVal / 2);
+		ofDrawCircle(ofPoint((double)thingposes[i][0] / rangeVal + ofGetWidth() / 2, (double)-thingposes[i][1] / rangeVal + (ofGetHeight()*0.8)), (double)thingposes[i][2] / rangeVal / 2);
 	}
 
 }
@@ -476,7 +476,7 @@ vector<vector<double>> URG_processsing::drawpoints(vector<long>data, double step
 {
 	vector<vector<double>>humanpoints;
 
-	double rangeVal = range / ofGetHeight();
+	double rangeVal = range / (ofGetHeight()*0.8);
 	ofFill();
 	ofSetColor(255, 0, 0);
 
@@ -484,12 +484,12 @@ vector<vector<double>> URG_processsing::drawpoints(vector<long>data, double step
 	{
 		vector<double>humanpoint;
 		int k = j + thingposes[0][3];
-		ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[k] / rangeVal  * cos((data.size() - k)*(double)step / 180 * M_PI + M_PI), data[k] / rangeVal * sin((data.size() - k)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()), 2);
+		ofDrawCircle(ofPoint(ofGetWidth() / 2 + data[k] / rangeVal  * cos((data.size() - k)*(double)step / 180 * M_PI + M_PI), data[k] / rangeVal * sin((data.size() - k)*(double)step / 180 * M_PI + M_PI) + ((ofGetHeight()*0.8))), 2);
 		humanpoint.push_back(ofGetWidth() / 2 + data[k] / rangeVal  * cos((data.size() - k)*(double)step / 180 * M_PI + M_PI));//x
-		humanpoint.push_back(data[k] / rangeVal * sin((data.size() - k)*(double)step / 180 * M_PI + M_PI) + ofGetHeight());
+		humanpoint.push_back(data[k] / rangeVal * sin((data.size() - k)*(double)step / 180 * M_PI + M_PI) + ofGetHeight()*0.8);
 		humanpoints.push_back(humanpoint);
 	}
-	//ofDrawCircle(ofPoint((double)thingposes[i][0] / rangeVal + ofGetWidth() / 2, (double)-thingposes[i][1] / rangeVal + ofGetHeight()), (double)thingposes[i][2] / rangeVal / 2);
+	//ofDrawCircle(ofPoint((double)thingposes[i][0] / rangeVal + ofGetWidth() / 2, (double)-thingposes[i][1] / rangeVal + ((ofGetHeight()*0.8)*0.8)), (double)thingposes[i][2] / rangeVal / 2);
 	
 	
 	
@@ -499,7 +499,7 @@ vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vecto
 {
 	vector<vector<double>>humanpoints;
 
-	double rangeVal = range / ofGetHeight();
+	double rangeVal = range / ((ofGetHeight()*0.8));
 	ofFill();
 	ofSetColor(0, 0, 0);
 	vector<ofPoint> point;
@@ -508,9 +508,9 @@ vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vecto
 		point.push_back(ofPoint(0,0));
 	}
 	ofVec2f vec[4];
-	point[0] = ofPoint(ofGetWidth() / 2 + data[thingposes[0][3]] / rangeVal  * cos((data.size() - thingposes[0][3])*(double)step / 180 * M_PI + M_PI), data[thingposes[0][3]] / rangeVal * sin((data.size() - thingposes[0][3])*(double)step / 180 * M_PI + M_PI) + ofGetHeight());
-	point[1] = ofPoint(ofGetWidth() / 2 + data[thingposes[0][3] + (int)(thingposes[0][4] - thingposes[0][3]) / 2] / rangeVal  * cos((data.size() - thingposes[0][3] - (int)(thingposes[0][4] - thingposes[0][3]) / 2)*(double)step / 180 * M_PI + M_PI), data[thingposes[0][3] + (int)(thingposes[0][4] - thingposes[0][3]) / 2] / rangeVal * sin((data.size() - thingposes[0][3] - (int)(thingposes[0][4] - thingposes[0][3]) / 2)*(double)step / 180 * M_PI + M_PI) + ofGetHeight());
-	point[2] = ofPoint(ofGetWidth() / 2 + data[thingposes[0][4]] / rangeVal  * cos((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI), data[thingposes[0][4]] / rangeVal * sin((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI) + ofGetHeight());
+	point[0] = ofPoint(ofGetWidth() / 2 + data[thingposes[0][3]] / rangeVal  * cos((data.size() - thingposes[0][3])*(double)step / 180 * M_PI + M_PI), data[thingposes[0][3]] / rangeVal * sin((data.size() - thingposes[0][3])*(double)step / 180 * M_PI + M_PI) + (ofGetHeight()*0.8));
+	point[1] = ofPoint(ofGetWidth() / 2 + data[thingposes[0][3] + (int)(thingposes[0][4] - thingposes[0][3]) / 2] / rangeVal  * cos((data.size() - thingposes[0][3] - (int)(thingposes[0][4] - thingposes[0][3]) / 2)*(double)step / 180 * M_PI + M_PI), data[thingposes[0][3] + (int)(thingposes[0][4] - thingposes[0][3]) / 2] / rangeVal * sin((data.size() - thingposes[0][3] - (int)(thingposes[0][4] - thingposes[0][3]) / 2)*(double)step / 180 * M_PI + M_PI) + (ofGetHeight()*0.8));
+	point[2] = ofPoint(ofGetWidth() / 2 + data[thingposes[0][4]] / rangeVal  * cos((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI), data[thingposes[0][4]] / rangeVal * sin((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI) + (ofGetHeight()*0.8));
 	vec[0] = point[2] - point[1];
 	point[3] = vec[0] + point[0];
 	for (int i = 0; i < 4; i++)
@@ -547,7 +547,7 @@ vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vecto
 {
 	vector<vector<double>>humanpoints;
 
-	double rangeVal = range / ofGetHeight();
+	double rangeVal = range / (ofGetHeight()*0.8);
 	ofFill();
 	ofSetColor(0, 0, 0);
 	vector<ofPoint> point;
@@ -567,7 +567,7 @@ vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vecto
 			minpos = j;
 		}
 	}
-	cout << minpos << endl;
+	//cout << minpos << endl;
 
 
 
@@ -581,7 +581,7 @@ vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vecto
 	point[1] = ofPoint(x, y);
 	
 	
-	x = ofGetWidth() / 2 + data[thingposes[0][4]] / rangeVal  * cos((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI), data[thingposes[0][4]] / rangeVal * sin((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI) + ofGetHeight();
+	x = ofGetWidth() / 2 + data[thingposes[0][4]] / rangeVal  * cos((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI), data[thingposes[0][4]] / rangeVal * sin((data.size() - thingposes[0][4])*(double)step / 180 * M_PI + M_PI) + (ofGetHeight()*0.8);
 	y = QuadraticElements[0] * (double)x*(double)x + QuadraticElements[1] * (double)x + QuadraticElements[2];
 	point[2] = ofPoint(x, y);
 	vec[0] = point[2] - point[1];
@@ -882,7 +882,7 @@ vector<double> URG_processsing::EllipseApproximation2(vector<vector<double>> hum
 
 	
 
-	cout << EllipseElemnt[2] << endl;
+	//cout << EllipseElemnt[2] << endl;
 	
 	return EllipseElemnt;
 }
@@ -963,7 +963,7 @@ void  URG_processsing::drawLinear(vector<double>LinearElement)
 	}
 	
 }
-void  URG_processsing::drawLinear(vector<ofPoint>Element)
+double  URG_processsing::drawLinear(vector<ofPoint>Element,vector<double>humandirects)
 {
 	ofSetColor(255, 0, 0);
 	double A = (Element[1].y - Element[0].y) / (Element[1].x - Element[0].x);
@@ -975,6 +975,131 @@ void  URG_processsing::drawLinear(vector<ofPoint>Element)
 		ofDrawLine(ofPoint(x, y), oldpoint);
 		oldpoint = ofPoint(x, y);
 	}
+	double direct = atan(A) / M_PI * 180;
+
+	double directpos=0;
+
+	if (humandirects[humandirects.size() - 1] > 150)
+	{
+		directpos = 5;
+	}
+	else if (humandirects[humandirects.size() - 1]>120)
+	{
+		directpos = 4;
+	}
+	else if (humandirects[humandirects.size() - 1]> 90)
+	{
+		directpos = 3;
+	}
+	else if (humandirects[humandirects.size() - 1] > 60)
+	{
+		directpos = 2;
+	}
+	else if(humandirects[humandirects.size() - 1]>30)
+	{
+		directpos = 1;
+	}
+	else if (humandirects[humandirects.size() - 1]> 0)
+	{
+		directpos = 0;
+	}
+	else if (humandirects[humandirects.size() - 1]> -30)
+	{
+		directpos = 11;
+	}
+	else if (humandirects[humandirects.size() - 1] > -60)
+	{
+		directpos = 10;
+	}
+	else if (humandirects[humandirects.size() - 1] > -90)
+	{
+		directpos = 9;
+	}
+	else if (humandirects[humandirects.size() - 1]> -120)
+	{
+		directpos = 8;
+	}
+	else if (humandirects[humandirects.size() - 1] > -150)
+	{
+		directpos = 7;
+	}
+	else if (humandirects[humandirects.size() - 1] > -180)
+	{
+		directpos = 6;
+	}
+
+
+
+	if (direct> 60)
+	{
+		if (directpos == 3 || directpos == 2 || directpos == 1)
+		{
+			//‚»‚Ì‚Ü‚Ü
+		}
+		else
+		{
+			direct -= 180;
+		}
+	}
+	else if (direct>30)
+	{
+		if (directpos == 2 || directpos == 1 || directpos == 0)
+		{
+			//‚»‚Ì‚Ü‚Ü
+		}
+		else
+		{
+			direct -= 180;
+		}
+	}
+	else if (direct> 0)
+	{
+		if (directpos == 1 || directpos == 0 || directpos == 11)
+		{
+			//‚»‚Ì‚Ü‚Ü
+		}
+		else
+		{
+			direct -= 180;
+		}
+	}
+	else if (direct> -30)
+	{
+		if (directpos == 0 || directpos == 11 || directpos == 10)
+		{
+			//‚»‚Ì‚Ü‚Ü
+		}
+		else
+		{
+			direct += 180;
+		}
+	}
+	else if (direct> -60)
+	{
+		if (directpos == 11 || directpos == 10 || directpos == 9)
+		{
+			//‚»‚Ì‚Ü‚Ü
+		}
+		else
+		{
+			direct += 180;
+		}
+	}
+	else if (direct > -90)
+	{
+		if (directpos == 10 || directpos == 9 || directpos == 8)
+		{
+			//‚»‚Ì‚Ü‚Ü
+		}
+		else
+		{
+			direct += 180;
+		}
+	}
+	cout << directpos << endl;
+
+	
+	return direct ;
 
 }
 

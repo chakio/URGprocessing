@@ -33,7 +33,7 @@ public:
 	void drawEllipse(vector<double>EllipseElements);
 	vector<double> LinearApproximation(vector<vector<double>> humanpoints);
 	void drawLinear(vector<double>EllipseElements);
-	void drawLinear(vector<ofPoint>EllipseElements);
+	double drawLinear(vector<ofPoint>EllipseElements,vector<double>humandirects);
 	vector<double> QuadraticApproximation(vector<vector<double>> humanpoints);
 	void drawQuadratic(vector<double>QuadraticElements);
 };

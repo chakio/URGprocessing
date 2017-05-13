@@ -46,6 +46,8 @@ class ofApp : public ofBaseApp{
 		vector<long> Ddata;
 		vector<vector<double>>thingspos ;//x,y,width,data‚Ìn‚Ü‚è‚ÌêŠAI‚í‚è‚ÌêŠ
 		void drawinformations(double range);
+		void drawGraph(double humandirect,double valueWidth);
+		vector<double> humandirects;
 		ofTrueTypeFont font;
 		vector<long> calibration(int sample);
 		URG_processsing urg_processing;
