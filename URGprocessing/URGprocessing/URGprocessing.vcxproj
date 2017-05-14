@@ -95,7 +95,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>C:\Users\kawasaki\Documents\urg_library-1.2.0\include\cpp;C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\kawasaki\Documents\eigen;C:\Users\kawasaki\Documents\urg_library-1.2.0\include\cpp;C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
@@ -115,8 +115,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>
-C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\kawasaki\Documents\urg_library-1.2.0\include\cpp;C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;C:\Users\kawasaki\Documents\eigen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -124,8 +123,8 @@ C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalI
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>urg_cpp.lib;ws2_32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\kawasaki\Source\Repos\URGprocessing\URGprocessing\URGprocessing\urg_cpp_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
     </PostBuildEvent>
@@ -187,8 +186,10 @@ C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalI
     <ClCompile Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSliderGroup.cpp" />
     <ClCompile Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxToggle.cpp" />
     <ClCompile Include="src\Connection_information.cpp" />
+    <ClCompile Include="src\CSV.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
+    <ClCompile Include="src\urg_processing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxBaseGui.h" />
@@ -201,7 +202,9 @@ C:\Users\kawasaki\Documents\of_v0.9.8_vs_release\addons\ofxGui\src;%(AdditionalI
     <ClInclude Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSliderGroup.h" />
     <ClInclude Include="..\..\..\..\..\Documents\of_v0.9.8_vs_release\addons\ofxGui\src\ofxToggle.h" />
     <ClInclude Include="src\Connection_information.h" />
+    <ClInclude Include="src\CSV.h" />
     <ClInclude Include="src\ofApp.h" />
+    <ClInclude Include="src\urg_processing.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

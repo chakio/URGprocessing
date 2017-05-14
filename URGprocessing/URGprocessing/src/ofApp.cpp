@@ -1,86 +1,157 @@
 #include "ofApp.h"
-
-
+#include<fstream>
+#include<iostream>
+#include<string>
+#include<sstream> 
+#include<math.h>
+#include <Eigen/Dense>
 //using namespace qrk;
 using namespace std;
-
+using namespace Eigen;
 
 ofApp::ofApp(int argc, char *argv[])
 {
-	// this kicks off the running of my app
-	// can be OF_WINDOW or OF_FULLSCREEN
-	// pass in width and height too:
-	Connection_information information(argc, argv);
-	
-	// Connects to the sensor
+	if (URGconnecting)//URGが接続されている場合
+	{
+		// this kicks off the running of my app
+		// can be OF_WINDOW or OF_FULLSCREEN
+		// pass in width and height too:
+		Connection_information information(argc, argv);
+		// Connects to the sensor
+		if (!urg.open(information.device_or_ip_name(),
+			information.baudrate_or_port_number(),
+			information.connection_type())) {
+			cout << "Urg_driver::open(): "
+				<< information.device_or_ip_name() << ": " << urg.what() << endl;
+		}
 
-	if (!urg.open(information.device_or_ip_name(),
-		information.baudrate_or_port_number(),
-		information.connection_type())) {
-		cout << "Urg_driver::open(): "
-			<< information.device_or_ip_name() << ": " << urg.what() << endl;
-		
-	}
-
-	// Gets measurement data
+		// Gets measurement data
 #if 1
 	// Case where the measurement range (start/end steps) is defined
-	urg.set_scanning_parameter(urg.deg2step(-90), urg.deg2step(+90), 0);//360digree/1024個 180度分で513個
+		urg.set_scanning_parameter(urg.deg2step(-90), urg.deg2step(+90), 0);//360digree/1024個 180度分で513個
 #endif
-	
-	urg.start_measurement(Urg_driver::Distance, Urg_driver::Infinity_times, 0);
+
+		urg.start_measurement(Urg_driver::Distance, Urg_driver::Infinity_times, 0);
+	}
 	
 }
 void ofApp::setup(){
+	gui.setup(); // most of the time you don't need a name
+	gui.add(framerate.setup("framerate"," " ));
+	gui.add(LinearE.setup("LinearE", " "));
+	gui.add(QuadraticE.setup("QuadraticE", " "));
+
 	ofSetFrameRate(15);
-	font.loadFont("Meiryo.ttf", 20);
+	font.loadFont("Meiryo.ttf", 10);
 	thingspos.clear();
 	datas.clear();
+	data.clear();
+	csvdatas.clear();
+	csvdata.clear();
+	humandirects.clear();
+	for (int i = 0; i < 40000; i++)
+	{
+		humandirects.push_back(10);
+	}
+	if (URGconnecting)//URGが接続されている場合
+	{
+		calibrationdata = calibration(50);//50回分の計測結果をもとにmapを作成
+	}
+	else
+	{
+		if (otomoCSV)
+		{
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs11.csv",URGRange[2]);//直進
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs10.csv", URGRange[2]);//直進
+
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs21.csv", URGRange[2]);//その場回転
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs20.csv", URGRange[2]);//その場回転
+
+			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs31.csv", URGRange[2]);//大まわり
+			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs30.csv", URGRange[2]);//大まわり
+			csvdatas = csv.OtomoToDatas(csvdatas);
+		}
+		else
+		{
+			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\roka.csv", URGRange[2]);
+			csvdata = csv.CSVprocessing(csvdatas);
+			cout << csvdata.size() << endl;
+			data = csv.CSVtoData(csvdata);
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	long time_stamp = 0;
-	if (!urg.get_distance(data, &time_stamp)) {
-		cout << "Urg_driver::get_distance(): " << urg.what() << endl;
-	}
-	data=urg_processing.limitprocessing(data, 200000, 20);
-	
-	//過去のデータの蓄積
-	//10個以上はためないようにする
-	if (datas.size() > 3)
+	if (URGconnecting)
 	{
-		datas.erase(datas.begin());
+		long time_stamp = 0;
+		if (!urg.get_distance(data, &time_stamp)) {
+			cout << "Urg_driver::get_distance(): " << urg.what() << endl;
+		}
+		data = urg_processing.limitprocessing(data, 200000, 20);
 	}
-	//最新データをベクターの最後に追加
-	datas.push_back(data);
-
-	data = urg_processing.lowpassfilter(data, datas);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	
-	ofSetColor(0, 0, 255);
-	double Avedata = 0;
-	ofPoint center(ofGetWidth() / 2, ofGetHeight());
-	urg_processing.drawdata(data);
-	
-	
-	thingspos = urg_processing.findthings2(data, 70);
-	/*if (thingspos.size() > 0)
+	if (URGconnecting)
 	{
-		cout << thingspos[0][2] << endl;
-	}*/
-	urg_processing.drawthings(thingspos);
- 	ofSetColor(255, 0, 0);
-	drawinformations();
+		ofSetColor(0, 0, 255);
+		double Avedata = 0;
+		ofPoint center(ofGetWidth() / 2, (ofGetHeight()*0.8));
+		urg_processing.drawdata(data, (double)URGRange[0] / URGRange[1], URGRange[2], URGRange[2]);
+		ofSetColor(0, 255, 0);
+		urg_processing.drawdata(calibrationdata, (double)URGRange[0] / URGRange[1], URGRange[2], URGRange[2]);
+		thingspos = urg_processing.findthings4(data, calibrationdata, 70);
+	}
+	else if (otomoCSV)
+	{
+		data = csvdatas[(int)ofGetElapsedTimeMillis()/50%(int)csvdatas.size()];
+		//data = csvdatas[10];
+		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2],6000);
+		thingspos = urg_processing.findthings5(data, 300, (double)URGRange[0] / URGRange[1], URGRange[2],200,2500,6000);//大きさ、x座標、y座標
+	}
+	else
+	{
+		ofSetColor(0, 255, 0);
+		urg_processing.drawdata(data, (double)URGRange[0] / URGRange[1], URGRange[2], URGRange[2]);
+		thingspos = urg_processing.findthings5(data, 70, (double)360/1024,URGRange[2] , 300, 2500, 4500);
+	}
 
+	
+	QuadraticElements = urg_processing.QuadraticApproximation(humanpoints);
+	urg_processing.drawQuadratic(QuadraticElements);
+	QuadraticE = ofToString(QuadraticElements[3], 3);
+	//urg_processing.drawthings(thingspos,6000);
+	humanpoints=urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1],thingspos, 6000);
+	Squarepoint=urg_processing.drawSquare(data, (double)URGRange[0] / URGRange[1], thingspos, 6000, QuadraticElements);
+
+	double humandirect;
+	humandirect =urg_processing.drawLinear(Squarepoint, humandirects);
+
+	
+	EllipseElements=urg_processing.EllipseApproximation(humanpoints);
+	urg_processing.drawEllipse(EllipseElements);
+
+	LinearElements = urg_processing.LinearApproximation(humanpoints);
+	urg_processing.drawLinear(LinearElements);
+	LinearE = ofToString(LinearElements[2], 3);
+	
+	
+
+	ofSetColor(255, 0, 0);
+	drawinformations(8000);
+	
+	drawGraph(humandirect, 180);/////
+	
+	gui.draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+	
 }
 
 //--------------------------------------------------------------
@@ -132,253 +203,76 @@ void ofApp::gotMessage(ofMessage msg){
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
 }
-void ofApp::drawinformations() {
+void ofApp::drawinformations(double range) {
 	stringstream ss;
 	ss << "framerate: " << ofToString(ofGetFrameRate(), 0);
 	ofDrawBitmapString(ss.str(), 10, 20);
 
+	framerate= ofToString(ofGetFrameRate(), 0);
 	ofSetCircleResolution(50);
 	ofNoFill();
 	ofSetColor(0, 0, 0);
 	ofSetLineWidth(3);
-	
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 250);
-	ss.str("");
-	ss << "500mm" ;
-	font.drawString(ss.str(), ofGetWidth() / 2-240, ofGetHeight()-40);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 500);
-	ss.str("");
-	ss << "1000mm";
-	font.drawString(ss.str(), ofGetWidth() / 2 - 470, ofGetHeight() - 40);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), 750);
-	ss.str("");
-	ss << "1500mm";
-	font.drawString(ss.str(), ofGetWidth() / 2 - 720, ofGetHeight() - 40);
 
-}
-
-URG_processsing::URG_processsing()
-{
-
-}
-vector<long> URG_processsing::limitprocessing(vector<long>data,int maxval,int minval)
-{
-	for (int i = 0; i < data.size(); i++)
+	for (int i = 1; i < 11; i++)
 	{
-		if (data[i] < minval)
-		{
-			data[i] = maxval;
-		}
-		if (data[i] > maxval)
-		{
-			data[i] = maxval;
-		}
-	}
-	return data;
-}
-
-void URG_processsing::drawdata(vector<long>data)
-{
-	ofPoint center(ofGetWidth() / 2, ofGetHeight());
-	for (int i = 0; i < data.size(); i++)
-	{
-		ofDrawLine(center, ofPoint(ofGetWidth() / 2 + data[i]/2  * cos((data.size() - i)*0.35 / 180 * M_PI + M_PI), data[i]/2 * sin((data.size() - i)*0.35 / 180 * M_PI + M_PI) + ofGetHeight()));
-
+		ofDrawCircle(ofPoint(ofGetWidth() / 2, (ofGetHeight()*0.8), 0), (double)1000*i * (ofGetHeight()*0.8) / range);
+		ss.str("");
+		ss << to_string(1000*i);
+		ss << "mm";
+		font.drawString(ss.str(), ofGetWidth() / 2 - (double)1000 *i* (ofGetHeight()*0.8) / range, (ofGetHeight()*0.8) - 40);
 	}
 }
-
-vector<vector<double>> URG_processsing::findthings1(vector<long>data,int length)
+vector<long> ofApp::calibration(int sample)
 {
-	bool find=false;//見つけたフラグ
-	double findpos[4] = { 0,0,0,0 };//物体が存在するであろう場所の平均値0:個数、1:そこまでの距離,2:x,3:y
-	double findposnum=0;//いくつのレーザーを遮ったか
-	double thinglength=0;//物体の横幅
-	vector<vector<double>> thingposes;
-	vector<double> thingpos;
-	thingposes.clear();
-	for (int i = 0; i < 4; i++)
+	cout << "calibration start" << endl;
+	vector<long> calibrationdata;
+	vector<long> data;
+	vector<vector<long>>calibrationdatas;
+	long max = 200000;
+	cout << "collectiong data" << endl;
+	for (int i = 0; i <sample; i++)
 	{
-		thingpos.push_back(0);
-	}
-	for (int i = 0; i < data.size(); i++)
-	{
-		
-		if (data[i] < length)
-		{
-			find = true;
-			findpos[0] += i;
-			findposnum++;
+		long time_stamp = 0;
+		if (!urg.get_distance(data, &time_stamp)) {
+			cout << "Urg_driver::get_distance(): " << urg.what() << endl;
 		}
-		else
-		{
-			if (find)
-			{
-				findpos[0] =((int)findpos[0]/ findposnum);//真ん中
-				findpos[1] = data[findpos[0]];
-				thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]*2;
-				findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
-				findpos[2] = findpos[1] * cos(findpos[0]);
-				findpos[3] = findpos[1] * sin(findpos[0]);
-				thingpos[0] = findpos[2];
-				thingpos[1] = findpos[3];
-				thingpos[2] = thinglength;
-				thingposes.push_back(thingpos);
+		data = urg_processing.limitprocessing(data, max, 20);
+		//最新データをベクターの最後に追加
+		calibrationdatas.push_back(data);
 
-			}
-			find = false;
-			findpos[0] = 0;
-			findposnum = 0;
-		}
-		
 	}
-	if (find)
+	//100回分の中で一番短い距離でマップを作る
+	cout << "conparing data" << endl;
+	for (int j = 0; j < calibrationdatas[0].size(); j++)
 	{
-		findpos[0] = (findpos[0] / findposnum);//真ん中
-		findpos[1] = data[(int)findpos[0]] ;
-		thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1]*2;
-		findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
-		findpos[2] = findpos[1] * cos(findpos[0]);
-		findpos[3] = findpos[1] * sin(findpos[0]);
-		thingpos[0] = findpos[2];
-		thingpos[1] = findpos[3];
-		thingpos[2] = thinglength;
-		thingposes.push_back(thingpos);
-
+		long minval = max;
+		for (int i = 0; i < calibrationdatas.size(); i++)
+		{
+			minval = min(minval, calibrationdatas[i][j]);
+		}
+		calibrationdata.push_back(minval);
 	}
+	cout << "calibration done" << endl;
 
-	
-	ofNoFill();
-	ofSetColor(0, 255, 0);
-	ofSetLineWidth(3);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), length/2);
-	
-
-	return thingposes;
+	return calibrationdata;
 }
-
-vector<vector<double>> URG_processsing::findthings2(vector<long>data, int length)
+void ofApp::drawGraph(double humandirect, double valueWidth)
 {
-	bool find = false;//見つけたフラグ
-	double findpos[4] = { 0,0,0,0 };//物体が存在するであろう場所の平均値0:個数、1:そこまでの距離,2:x,3:y
-	double findposnum = 0;//いくつのレーザーを遮ったか
-	double thinglength = 0;//物体の横幅
-	vector<vector<double>> thingposes;
-	vector<double> thingpos;
-	thingposes.clear();
-	for (int i = 0; i < 4; i++)
+
+	humandirects.push_back(humandirect);
+	if (humandirects.size() > ofGetWidth())
 	{
-		thingpos.push_back(0);
+		humandirects.erase(humandirects.begin());
 	}
-	for (int i = 0; i < data.size(); i++)
-	{
-
-		if (data[i] < 500)
-		{
-			find = true;
-			findpos[0] += i;
-			findposnum++;
-		}
-		else
-		{
-			if (find)
-			{
-				findpos[0] = (findpos[0] / findposnum);//真ん中
-				findpos[1] = data[(int)findpos[0]];
-				thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1] * 2;
-				findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
-				findpos[2] = findpos[1] * cos(findpos[0]);
-				findpos[3] = findpos[1] * sin(findpos[0]);
-				thingpos[0] = findpos[2];
-				thingpos[1] = findpos[3];
-				thingpos[2] = thinglength;
-				if (thinglength > (double)length*0.80)
-				{
-					if (thinglength < (double)length*1.20)
-					{
-						thingposes.push_back(thingpos);
-					}
-				}
-
-			}
-			find = false;
-			findpos[0] = 0;
-			findposnum = 0;
-		}
-
-	}
-	if (find)
-	{
-		findpos[0] = (findpos[0] / findposnum);//真ん中
-		findpos[1] = data[(int)findpos[0]];
-		thinglength = tan(findposnum*0.35 / 180 * M_PI / 2)*findpos[1] * 2;
-		findpos[0] *= 0.35 / 180 * M_PI;//物体の真ん中の角度(ラジアン)
-		findpos[2] = findpos[1] * cos(findpos[0]);
-		findpos[3] = findpos[1] * sin(findpos[0]);
-		thingpos[0] = findpos[2];
-		thingpos[1] = findpos[3];
-		thingpos[2] = thinglength;
-		if (thinglength > (double)length-20)
-		{
-			if (thinglength < (double)length+20)
-			{
-				thingposes.push_back(thingpos);
-			}
-		}
-
-	}
-
-
-	ofNoFill();
-	ofSetColor(0, 255, 0);
-	ofSetLineWidth(3);
-	ofDrawCircle(ofPoint(ofGetWidth() / 2, ofGetHeight(), 0), length / 2);
-
-
-	return thingposes;
-}
-
-
-void URG_processsing::drawthings(vector<vector<double>>thingposes)
-{
-	ofSetColor(255, 0, 0);
 	ofFill();
-	for (int i = 0; i < thingposes.size(); i++)
+	ofSetColor(0, 0, 0);
+	ofDrawRectangle(ofPoint(0, ofGetHeight()*0.8), ofGetWidth(), ofGetHeight()*0.2);
+	ofSetColor(0, 255, 0);
+	ofSetLineWidth(2);
+	for (int i = 0; i < ofGetWidth(); i++)
 	{
-		ofDrawCircle(ofPoint(thingposes[i][0]/2+ofGetWidth()/2, -thingposes[i][1]/2+ofGetHeight()), thingposes[i][2]/4 );
-
+		ofDrawLine(ofPoint(i, -humandirects[humandirects.size()-1-i]* ofGetHeight()*0.1/ valueWidth + ofGetHeight()*0.9), ofPoint(i+1, -humandirects[humandirects.size()-i-2] * ofGetHeight()*0.1 / valueWidth + ofGetHeight()*0.9));
 	}
 }
 
-vector<long> URG_processsing::lowpassfilter(vector<long>data, vector<vector<long>>datas)
-{
-	//平均用のメモリの確保
-	vector<long>ave;
-	for (int i = 0; i < data.size(); i++)
-	{
-		ave.push_back(0);
-	}
-	
-	//平均を求めるため各配列の足し算(最新データは平均に使わない)
-	for (int i = 0; i < datas.size(); i++)
-	{
-		for (int j = 0; j < datas[i].size(); j++)
-		{
-			ave[j] += datas[i][j];
-		}
-	}
-	//平均の計算
-	for (int i = 0; i < ave.size(); i++)
-	{
-		ave[i] /= datas.size() ;
-	}
-	//最新データを加味
-	if (datas.size() > 1)
-	{
-		for (int i = 0; i < ave.size(); i++)
-		{
-			ave[i] += 9*datas[datas.size()-1][i];
-			ave[i] /= 10;//平均と最新の比1:1
-		}
-	}
-	return ave;
-}
