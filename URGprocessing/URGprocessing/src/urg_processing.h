@@ -23,17 +23,17 @@ public:
 	vector<vector<double>> findthings3(vector<long>data, vector<long>calibration);//マップをもとに検出
 	vector<vector<double>> findthings4(vector<long>data, vector<long>calibration, int length);//マップをもとに,大きさがlengthくらいのものを検知
 	vector<vector<double>> findthings5(vector<long>data, int length, double step, double range, double Width, double Xwidth, double Ywidth);//基準なしで大きさがlengthくらいのものを検知
-	void drawthings(vector<vector<double>>, double range);
+	void drawthings(vector<vector<double>>, double range,bool thing);
 	vector<vector<double>> drawpoints(vector<long>data, double step, vector<vector<double>>thingposes, double range);
 	vector<ofPoint> drawSquare(vector<long>data, double step, vector<vector<double>>thingposes, double range);
-	vector<ofPoint> drawSquare(vector<long>data, double step, vector<vector<double>>thingposes, double range, vector<double>QuadraticElements);
+	vector<ofPoint> drawSquare(vector<long>data, double step, vector<vector<double>>thingposes, double range, vector<double>QuadraticElements, bool Square);
 	vector<long> lowpassfilter(vector<long>data, vector<vector<long>>datas);
 	vector<double> EllipseApproximation(vector<vector<double>> humanpoints);
 	vector<double> EllipseApproximation2(vector<vector<double>> humanpoints);
 	void drawEllipse(vector<double>EllipseElements);
 	vector<double> LinearApproximation(vector<vector<double>> humanpoints);
-	void drawLinear(vector<double>EllipseElements);
-	double drawLinear(vector<ofPoint>EllipseElements,vector<double>humandirects);
+	void drawLinear(vector<double>EllipseElements, bool Linear);
+	vector<double> drawHumandirect(vector<ofPoint>Element, vector<vector<double>>humandirects, bool Linear);
 	vector<double> QuadraticApproximation(vector<vector<double>> humanpoints);
-	void drawQuadratic(vector<double>QuadraticElements);
+	void drawQuadratic(vector<double>QuadraticElements,bool Quadratic);
 };

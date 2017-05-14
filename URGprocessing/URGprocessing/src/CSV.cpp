@@ -121,3 +121,20 @@ vector<vector<long>>CSV::OtomoToDatas(vector<vector<long>>datas)
 	}
 	return datas;
 }
+
+vector<long>CSV::CSVloadTime(vector<vector<long>>datas)
+{
+	vector<long>times;
+	for (int i = 0; i < datas.size(); i++)
+	{
+		times.push_back(datas[i][0]);
+	}
+	return times;
+}
+
+void CSV::drawCSV(double data, double time)
+{
+	ofstream write_file;
+	write_file.open("Test.csv", ios::app);
+	write_file << ofToString(time, 3) + "," + ofToString(data, 3) << endl;
+}

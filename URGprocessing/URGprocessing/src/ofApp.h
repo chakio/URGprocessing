@@ -39,15 +39,15 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		enum { Capture_times = 100 };
 		Urg_driver urg;
-		vector<long> data,data1;
+		vector<long> data,data1,timedatas;
 		vector<vector<long>>datas;//ローパスフィルター用
 		vector<long>calibrationdata;//キャリブレーション用
 		vector<unsigned short> intensity;
 		vector<long> Ddata;
 		vector<vector<double>>thingspos ;//x,y,width,dataの始まりの場所、終わりの場所
 		void drawinformations(double range);
-		void drawGraph(double humandirect,double valueWidth);
-		vector<double> humandirects;
+		void drawGraph(vector<double> humandirect,double valueWidth);
+		vector<vector<double>> humandirects;
 		ofTrueTypeFont font;
 		vector<long> calibration(int sample);
 		URG_processsing urg_processing;
@@ -55,6 +55,8 @@ class ofApp : public ofBaseApp{
 		vector<long> csvdata;
 		bool URGconnecting = false;//URGが接続されている場合true,CSVをもとにする場合false
 		bool otomoCSV = true;
+
+		int csvNum = 0;
 		CSV csv;
 
 		int step = 0;
@@ -69,10 +71,19 @@ class ofApp : public ofBaseApp{
 		vector<double> LinearElements;
 		vector<double> QuadraticElements;
 
-		ofxLabel framerate;
-		ofxLabel LinearE;
-		ofxLabel QuadraticE;
+		ofxFloatSlider framerate;
+		ofxFloatSlider LinearE;
+		ofxFloatSlider QuadraticE;
+
+		ofxToggle thing;
+		ofxToggle Linear;
+		ofxToggle Quadratic;
+		ofxToggle Ellipse;
+		ofxToggle Square;
+		ofxToggle Humandirect;
 		ofxPanel gui;
 		
+		
+
 };
 

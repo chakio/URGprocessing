@@ -36,22 +36,41 @@ ofApp::ofApp(int argc, char *argv[])
 	
 }
 void ofApp::setup(){
-	gui.setup(); // most of the time you don't need a name
-	gui.add(framerate.setup("framerate"," " ));
-	gui.add(LinearE.setup("LinearE", " "));
-	gui.add(QuadraticE.setup("QuadraticE", " "));
 
-	ofSetFrameRate(15);
-	font.loadFont("Meiryo.ttf", 10);
+
+	gui.setup(); // most of the time you don't need a name
+	ofxGuiSetFont("Meiryo.ttf", 20, true, true);
+	ofxGuiSetTextPadding(7);
+	ofxGuiSetDefaultWidth(300);
+	ofxGuiSetDefaultHeight(40);
+	gui.add(framerate.setup("framerate", 0, 0, 60));
+	gui.add(LinearE.setup("LineE", 0, 0, 300));
+	gui.add(QuadraticE.setup("QuadE", 0, 0, 300));
+	
+	gui.add(thing.setup("Thing", true));
+	gui.add(Ellipse.setup("Ellipse",true ));
+	gui.add(Linear.setup("Line", true));
+	gui.add(Quadratic.setup("Quad", true));
+	gui.add(Square.setup("Square", true));
+	gui.add(Humandirect.setup("Humandirect", true));
+
+
+	ofSetFrameRate(20);
+	font.loadFont("Meiryo.ttf", 20);
 	thingspos.clear();
 	datas.clear();
 	data.clear();
 	csvdatas.clear();
 	csvdata.clear();
 	humandirects.clear();
-	for (int i = 0; i < 3000; i++)
+	for (int i = 0; i < 10000; i++)
 	{
-		humandirects.push_back(10);
+		vector<double>buffer;
+		for (int j = 0; j < 2; j++)
+		{
+			buffer.push_back(10);
+		}
+		humandirects.push_back(buffer);
 	}
 	if (URGconnecting)//URGが接続されている場合
 	{
@@ -69,6 +88,7 @@ void ofApp::setup(){
 
 			//csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs31.csv", URGRange[2]);//大まわり
 			csvdatas = csv.CSVloading("C:\\Users\\kawasaki\\Source\\Repos\\URGprocessing\\URGprocessing\\URGprocessing\\bin\\data\\Lrs30.csv", URGRange[2]);//大まわり
+			timedatas = csv.CSVloadTime(csvdatas);
 			csvdatas = csv.OtomoToDatas(csvdatas);
 		}
 		else
@@ -91,6 +111,8 @@ void ofApp::update() {
 		}
 		data = urg_processing.limitprocessing(data, 200000, 20);
 	}
+
+	csvNum = (int)ofGetElapsedTimeMillis() / 60 % (int)csvdatas.size();
 }
 
 //--------------------------------------------------------------
@@ -108,7 +130,8 @@ void ofApp::draw(){
 	}
 	else if (otomoCSV)
 	{
-		data = csvdatas[(int)ofGetElapsedTimeMillis()/50%(int)csvdatas.size()];
+		
+		data = csvdatas[csvNum];
 		//data = csvdatas[10];
 		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2],6000);
 		thingspos = urg_processing.findthings5(data, 300, (double)URGRange[0] / URGRange[1], URGRange[2],200,2500,6000);//大きさ、x座標、y座標
@@ -120,33 +143,38 @@ void ofApp::draw(){
 		thingspos = urg_processing.findthings5(data, 70, (double)360/1024,URGRange[2] , 300, 2500, 4500);
 	}
 
+	humanpoints = urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1], thingspos, 6000);
 	
 	QuadraticElements = urg_processing.QuadraticApproximation(humanpoints);
-	urg_processing.drawQuadratic(QuadraticElements);
-	QuadraticE = ofToString(QuadraticElements[3], 3);
-	//urg_processing.drawthings(thingspos,6000);
-	humanpoints=urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1],thingspos, 6000);
-	Squarepoint=urg_processing.drawSquare(data, (double)URGRange[0] / URGRange[1], thingspos, 6000, QuadraticElements);
-
-	double humandirect;
-	humandirect =urg_processing.drawLinear(Squarepoint, humandirects);
+	urg_processing.drawQuadratic(QuadraticElements, Quadratic);
+	QuadraticE = QuadraticElements[3];
+	urg_processing.drawthings(thingspos,6000,thing);
+	
+	Squarepoint = urg_processing.drawSquare(data, (double)URGRange[0] / URGRange[1], thingspos, 6000, QuadraticElements, Square);
+	vector<double> humandirect;
+	humandirect =urg_processing.drawHumandirect(Squarepoint, humandirects, Humandirect);
 
 	
 	EllipseElements=urg_processing.EllipseApproximation(humanpoints);
-	urg_processing.drawEllipse(EllipseElements);
-
+	
+	if (Ellipse)
+	{
+		urg_processing.drawEllipse(EllipseElements);
+	}
 	LinearElements = urg_processing.LinearApproximation(humanpoints);
-	urg_processing.drawLinear(LinearElements);
-	LinearE = ofToString(LinearElements[2], 3);
+	urg_processing.drawLinear(LinearElements, Linear);
+	LinearE = LinearElements[2];
 	
 	
 
 	ofSetColor(255, 0, 0);
 	drawinformations(8000);
 	
-	drawGraph(humandirect, 180);
+	drawGraph(humandirect, 90);
 	
+	//csv.drawCSV(humandirect[0], timedatas[csvNum]);//CSVに書き込み
 	gui.draw();
+
 }
 
 //--------------------------------------------------------------
@@ -205,10 +233,10 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 }
 void ofApp::drawinformations(double range) {
 	stringstream ss;
-	ss << "framerate: " << ofToString(ofGetFrameRate(), 0);
-	ofDrawBitmapString(ss.str(), 10, 20);
+	/*ss << "framerate: " << ofToString(ofGetFrameRate(), 0);
+	ofDrawBitmapString(ss.str(), 10, 20);*/
 
-	framerate= ofToString(ofGetFrameRate(), 0);
+	framerate= ofGetFrameRate();
 	ofSetCircleResolution(50);
 	ofNoFill();
 	ofSetColor(0, 0, 0);
@@ -257,7 +285,7 @@ vector<long> ofApp::calibration(int sample)
 
 	return calibrationdata;
 }
-void ofApp::drawGraph(double humandirect, double valueWidth)
+void ofApp::drawGraph(vector<double> humandirect, double valueWidth)
 {
 
 	humandirects.push_back(humandirect);
@@ -265,14 +293,26 @@ void ofApp::drawGraph(double humandirect, double valueWidth)
 	{
 		humandirects.erase(humandirects.begin());
 	}
+	
 	ofFill();
 	ofSetColor(0, 0, 0);
 	ofDrawRectangle(ofPoint(0, ofGetHeight()*0.8), ofGetWidth(), ofGetHeight()*0.2);
-	ofSetColor(0, 255, 0);
+	
 	ofSetLineWidth(2);
 	for (int i = 0; i < ofGetWidth(); i++)
 	{
-		ofDrawLine(ofPoint(i, -humandirects[humandirects.size()-1-i]* ofGetHeight()*0.1/ valueWidth + ofGetHeight()*0.9), ofPoint(i+1, -humandirects[humandirects.size()-i-2] * ofGetHeight()*0.1 / valueWidth + ofGetHeight()*0.9));
+		ofSetColor(0, 255, 0);
+		ofDrawLine(ofPoint(i, -humandirects[humandirects.size()-1-i][0]* ofGetHeight()*0.1/ valueWidth + ofGetHeight()*0.9), ofPoint(i+1, -humandirects[humandirects.size()-i-2][0] * ofGetHeight()*0.1 / valueWidth + ofGetHeight()*0.9));
+		ofSetColor(0, 0, 255);
+		ofDrawLine(ofPoint(i, -humandirects[humandirects.size() - 1 - i][1] * ofGetHeight()*0.1 / valueWidth + ofGetHeight()*0.9), ofPoint(i + 1, -humandirects[humandirects.size() - i - 2][1] * ofGetHeight()*0.1 / valueWidth + ofGetHeight()*0.9));
 	}
+
+	ofSetColor(255, 0, 0);
+	stringstream ss;
+	ss <<  ofToString(valueWidth, 0);
+	font.drawString(ss.str(), 10, ofGetHeight()*0.8+20);
+	ss.str("");
+	ss << ofToString(-valueWidth, 0);
+	font.drawString(ss.str(), 10, ofGetHeight()-10);
 }
 

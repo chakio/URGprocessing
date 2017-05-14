@@ -460,16 +460,18 @@ vector<vector<double>> URG_processsing::findthings5(vector<long>data, int length
 	return thingposes;
 }
 
-void URG_processsing::drawthings(vector<vector<double>>thingposes, double range)
+void URG_processsing::drawthings(vector<vector<double>>thingposes, double range,bool thing)
 {
-	double rangeVal = range / (ofGetHeight()*0.8);
-	ofNoFill();
-	for (int i = 0; i < thingposes.size(); i++)
+	if (thing)
 	{
-		ofSetColor(255, 0, 0);	
-		ofDrawCircle(ofPoint((double)thingposes[i][0] / rangeVal + ofGetWidth() / 2, (double)-thingposes[i][1] / rangeVal + (ofGetHeight()*0.8)), (double)thingposes[i][2] / rangeVal / 2);
+		double rangeVal = range / (ofGetHeight()*0.8);
+		ofNoFill();
+		for (int i = 0; i < thingposes.size(); i++)
+		{
+			ofSetColor(255, 0, 0);
+			ofDrawCircle(ofPoint((double)thingposes[i][0] / rangeVal + ofGetWidth() / 2, (double)-thingposes[i][1] / rangeVal + (ofGetHeight()*0.8)), (double)thingposes[i][2] / rangeVal / 2);
+		}
 	}
-
 }
 
 vector<vector<double>> URG_processsing::drawpoints(vector<long>data, double step, vector<vector<double>>thingposes, double range)
@@ -543,7 +545,7 @@ vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vecto
 	return anspoint;
 }
 
-vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vector<vector<double>>thingposes, double range, vector<double>QuadraticElements)
+vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vector<vector<double>>thingposes, double range, vector<double>QuadraticElements,bool Square)
 {
 	vector<vector<double>>humanpoints;
 
@@ -586,9 +588,12 @@ vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vecto
 	point[2] = ofPoint(x, y);
 	vec[0] = point[2] - point[1];
 	point[3] = vec[0] + point[0];
-	for (int i = 0; i < 4; i++)
+	if (Square)
 	{
-		ofDrawCircle(point[i], 5);
+		for (int i = 0; i < 4; i++)
+		{
+			ofDrawCircle(point[i], 5);
+		}
 	}
 	vec[2] = point[2] - point[0];
 	vec[3] = point[3] - point[1];
@@ -950,7 +955,7 @@ vector<double> URG_processsing::LinearApproximation(vector<vector<double>> human
 	return LineElement;
 }
 
-void  URG_processsing::drawLinear(vector<double>LinearElement)
+void  URG_processsing::drawLinear(vector<double>LinearElement, bool Linear)
 {
 	ofSetColor(0, 0, 255);
 
@@ -958,12 +963,15 @@ void  URG_processsing::drawLinear(vector<double>LinearElement)
 	for (int x = 1; x < ofGetWidth(); x++)
 	{
 		double y = LinearElement[0] * (double)x + LinearElement[1];
-		ofDrawLine(ofPoint(x, y), oldpoint);
+		if (Linear)
+		{
+			ofDrawLine(ofPoint(x, y), oldpoint);
+		}
 		oldpoint = ofPoint(x, y);
 	}
 	
 }
-double  URG_processsing::drawLinear(vector<ofPoint>Element,vector<double>humandirects)
+vector<double>  URG_processsing::drawHumandirect(vector<ofPoint>Element, vector<vector<double>>humandirects, bool Linear)
 {
 	ofSetColor(255, 0, 0);
 	double A = (Element[1].y - Element[0].y) / (Element[1].x - Element[0].x);
@@ -972,65 +980,73 @@ double  URG_processsing::drawLinear(vector<ofPoint>Element,vector<double>humandi
 	for (int x = 1; x < ofGetWidth(); x++)
 	{
 		double y = A* (double)x + B;
-		ofDrawLine(ofPoint(x, y), oldpoint);
+		if (Linear)
+		{
+			ofDrawLine(ofPoint(x, y), oldpoint);
+		}
 		oldpoint = ofPoint(x, y);
 	}
-	double direct = atan(A) / M_PI * 180;
+	vector<double> direct;
+	for (int i = 0; i < 2; i++)
+	{
+		direct.push_back(0);
+	}
+	direct[0] = atan(A) / M_PI * 180;
 
 	double directpos=0;
 
-	if (humandirects[humandirects.size() - 1] > 150)
+	if (humandirects[humandirects.size() - 1][1] > 150)
 	{
 		directpos = 5;
 	}
-	else if (humandirects[humandirects.size() - 1]>120)
+	else if (humandirects[humandirects.size() - 1][1] >120)
 	{
 		directpos = 4;
 	}
-	else if (humandirects[humandirects.size() - 1]> 90)
+	else if (humandirects[humandirects.size() - 1][1] > 90)
 	{
 		directpos = 3;
 	}
-	else if (humandirects[humandirects.size() - 1] > 60)
+	else if (humandirects[humandirects.size() - 1][1] > 60)
 	{
 		directpos = 2;
 	}
-	else if(humandirects[humandirects.size() - 1]>30)
+	else if(humandirects[humandirects.size() - 1][1] >30)
 	{
 		directpos = 1;
 	}
-	else if (humandirects[humandirects.size() - 1]> 0)
+	else if (humandirects[humandirects.size() - 1][1] > 0)
 	{
 		directpos = 0;
 	}
-	else if (humandirects[humandirects.size() - 1]> -30)
+	else if (humandirects[humandirects.size() - 1][1] > -30)
 	{
 		directpos = 11;
 	}
-	else if (humandirects[humandirects.size() - 1] > -60)
+	else if (humandirects[humandirects.size() - 1][1] > -60)
 	{
 		directpos = 10;
 	}
-	else if (humandirects[humandirects.size() - 1] > -90)
+	else if (humandirects[humandirects.size() - 1][1] > -90)
 	{
 		directpos = 9;
 	}
-	else if (humandirects[humandirects.size() - 1]> -120)
+	else if (humandirects[humandirects.size() - 1][1] > -120)
 	{
 		directpos = 8;
 	}
-	else if (humandirects[humandirects.size() - 1] > -150)
+	else if (humandirects[humandirects.size() - 1][1] > -150)
 	{
 		directpos = 7;
 	}
-	else if (humandirects[humandirects.size() - 1] > -180)
+	else if (humandirects[humandirects.size() - 1][1] > -180)
 	{
 		directpos = 6;
 	}
 
 
 
-	if (direct> 60)
+	if (direct[0]> 60)
 	{
 		if (directpos == 3 || directpos == 2 || directpos == 1)
 		{
@@ -1038,10 +1054,10 @@ double  URG_processsing::drawLinear(vector<ofPoint>Element,vector<double>humandi
 		}
 		else
 		{
-			direct -= 180;
+			direct[1] = direct[0] - 180;
 		}
 	}
-	else if (direct>30)
+	else if (direct[0]>30)
 	{
 		if (directpos == 2 || directpos == 1 || directpos == 0)
 		{
@@ -1049,10 +1065,10 @@ double  URG_processsing::drawLinear(vector<ofPoint>Element,vector<double>humandi
 		}
 		else
 		{
-			direct -= 180;
+			direct[1] = direct[0] - 180;
 		}
 	}
-	else if (direct> 0)
+	else if (direct[0]> 0)
 	{
 		if (directpos == 1 || directpos == 0 || directpos == 11)
 		{
@@ -1060,10 +1076,10 @@ double  URG_processsing::drawLinear(vector<ofPoint>Element,vector<double>humandi
 		}
 		else
 		{
-			direct -= 180;
+			direct[1] = direct[0] - 180;
 		}
 	}
-	else if (direct> -30)
+	else if (direct[0]> -30)
 	{
 		if (directpos == 0 || directpos == 11 || directpos == 10)
 		{
@@ -1071,10 +1087,10 @@ double  URG_processsing::drawLinear(vector<ofPoint>Element,vector<double>humandi
 		}
 		else
 		{
-			direct += 180;
+			direct[1] = direct[0] + 180;
 		}
 	}
-	else if (direct> -60)
+	else if (direct[0]> -60)
 	{
 		if (directpos == 11 || directpos == 10 || directpos == 9)
 		{
@@ -1082,10 +1098,10 @@ double  URG_processsing::drawLinear(vector<ofPoint>Element,vector<double>humandi
 		}
 		else
 		{
-			direct += 180;
+			direct[1] = direct[0] +180;
 		}
 	}
-	else if (direct > -90)
+	else if (direct[0] > -90)
 	{
 		if (directpos == 10 || directpos == 9 || directpos == 8)
 		{
@@ -1093,10 +1109,10 @@ double  URG_processsing::drawLinear(vector<ofPoint>Element,vector<double>humandi
 		}
 		else
 		{
-			direct += 180;
+			direct[1] = direct[0]+180;
 		}
 	}
-	cout << directpos << endl;
+	//cout << directpos << endl;
 
 	
 	return direct ;
@@ -1188,17 +1204,19 @@ vector<double> URG_processsing::QuadraticApproximation(vector<vector<double>> hu
 	return QuadraticElement;
 }
 
-void URG_processsing::drawQuadratic(vector<double>QuadraticElement)
+void URG_processsing::drawQuadratic(vector<double>QuadraticElement,bool Quadratic)
 {
-	ofSetColor(255, 255, 0);
-	
-	
 
+	ofSetColor(255, 255, 0);
 	ofPoint oldpoint = ofPoint(0, QuadraticElement[2]);
 	for (int x = 1; x < ofGetWidth(); x++)
 	{
 		double y = QuadraticElement[0] * (double)x*(double)x + QuadraticElement[1] * (double)x + QuadraticElement[2];
-		ofDrawLine(ofPoint(x, y), oldpoint);
+		if (Quadratic)
+		{
+			ofDrawLine(ofPoint(x, y), oldpoint);
+		}
 		oldpoint = ofPoint(x, y);
 	}
+
 }
