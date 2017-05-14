@@ -81,6 +81,7 @@ class ofApp : public ofBaseApp{
 		ofxToggle Ellipse;
 		ofxToggle Square;
 		ofxToggle Humandirect;
+		ofxFloatSlider ShowRange;
 		ofxPanel gui;
 		
 		

@@ -24,16 +24,13 @@ ofApp::ofApp(int argc, char *argv[])
 			cout << "Urg_driver::open(): "
 				<< information.device_or_ip_name() << ": " << urg.what() << endl;
 		}
-
 		// Gets measurement data
 #if 1
 	// Case where the measurement range (start/end steps) is defined
 		urg.set_scanning_parameter(urg.deg2step(-90), urg.deg2step(+90), 0);//360digree/1024個 180度分で513個
 #endif
-
 		urg.start_measurement(Urg_driver::Distance, Urg_driver::Infinity_times, 0);
 	}
-	
 }
 void ofApp::setup(){
 
@@ -46,7 +43,7 @@ void ofApp::setup(){
 	gui.add(framerate.setup("framerate", 0, 0, 60));
 	gui.add(LinearE.setup("LineE", 0, 0, 300));
 	gui.add(QuadraticE.setup("QuadE", 0, 0, 300));
-	
+	gui.add(ShowRange.setup("ShowRange", 7000, 1000, URGRange[2]));
 	gui.add(thing.setup("Thing", true));
 	gui.add(Ellipse.setup("Ellipse",true ));
 	gui.add(Linear.setup("Line", true));
@@ -118,6 +115,8 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw(){
 	
+	double showrange = ShowRange;
+
 	if (URGconnecting)
 	{
 		ofSetColor(0, 0, 255);
@@ -133,24 +132,24 @@ void ofApp::draw(){
 		
 		data = csvdatas[csvNum];
 		//data = csvdatas[10];
-		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2],6000);
+		urg_processing.drawdata(data,(double)URGRange[0]/URGRange[1], URGRange[2], showrange);
 		thingspos = urg_processing.findthings5(data, 300, (double)URGRange[0] / URGRange[1], URGRange[2],200,2500,6000);//大きさ、x座標、y座標
 	}
 	else
 	{
 		ofSetColor(0, 255, 0);
-		urg_processing.drawdata(data, (double)URGRange[0] / URGRange[1], URGRange[2], URGRange[2]);
+		urg_processing.drawdata(data, (double)URGRange[0] / URGRange[1], URGRange[2], showrange);
 		thingspos = urg_processing.findthings5(data, 70, (double)360/1024,URGRange[2] , 300, 2500, 4500);
 	}
 
-	humanpoints = urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1], thingspos, 6000);
+	humanpoints = urg_processing.drawpoints(data, (double)URGRange[0] / URGRange[1], thingspos, showrange);
 	
 	QuadraticElements = urg_processing.QuadraticApproximation(humanpoints);
 	urg_processing.drawQuadratic(QuadraticElements, Quadratic);
 	QuadraticE = QuadraticElements[3];
-	urg_processing.drawthings(thingspos,6000,thing);
+	urg_processing.drawthings(thingspos, showrange,thing);
 	
-	Squarepoint = urg_processing.drawSquare(data, (double)URGRange[0] / URGRange[1], thingspos, 6000, QuadraticElements, Square);
+	Squarepoint = urg_processing.drawSquare(data, (double)URGRange[0] / URGRange[1], thingspos, showrange, QuadraticElements, Square);
 	vector<double> humandirect;
 	humandirect =urg_processing.drawHumandirect(Squarepoint, humandirects, Humandirect);
 
@@ -168,9 +167,9 @@ void ofApp::draw(){
 	
 
 	ofSetColor(255, 0, 0);
-	drawinformations(8000);
+	drawinformations(showrange);
 	
-	drawGraph(humandirect, 90);
+	drawGraph(humandirect, 180);
 	
 	//csv.drawCSV(humandirect[0], timedatas[csvNum]);//CSVに書き込み
 	gui.draw();

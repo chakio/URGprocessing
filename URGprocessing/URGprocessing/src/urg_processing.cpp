@@ -553,7 +553,7 @@ vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vecto
 	ofFill();
 	ofSetColor(0, 0, 0);
 	vector<ofPoint> point;
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		point.push_back(ofPoint(0, 0));
 	}
@@ -588,9 +588,16 @@ vector<ofPoint> URG_processsing::drawSquare(vector<long>data, double step, vecto
 	point[2] = ofPoint(x, y);
 	vec[0] = point[2] - point[1];
 	point[3] = vec[0] + point[0];
+
+
+	for (int i = 0; i < 4; i++)
+	{
+		point[4] += point[i];
+	}
+	point[4] /= 4;
 	if (Square)
 	{
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 5; i++)
 		{
 			ofDrawCircle(point[i], 5);
 		}
